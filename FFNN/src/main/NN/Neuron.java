@@ -9,18 +9,22 @@ public class Neuron {
     Double Error = 0.0;
     Double MinRange;
     Double MaxRange;
+    public int Type; //1: FF, 2: Bias, 3: Recursive
     Layer Layer;
     Color Color;
     Point Location;
 
-    public Neuron(Double value, Layer layer, Color color) {
+    public Neuron(Double value, Layer layer, int type, Color color) {
         Value = value;
         Layer = layer;
+        Type = type;
         Color = color;
     }
 
     public void update() {
-        Value = ((MaxRange - MinRange) / (1 + (Math.pow(2.71828, -Value)))) + MinRange;
+    		if (Type==1) {
+    			Value = ((MaxRange - MinRange) / (1 + (Math.pow(2.71828, -Value)))) + MinRange;
+    		}
     }
 
     public void setValue(Double value) {

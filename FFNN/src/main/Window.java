@@ -42,6 +42,13 @@ public class Window extends JFrame {
         5,
         3,
         1,
+    }, new int[] {
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
     }, 0.01);
     private static int NX;
     private static int NY;
@@ -129,12 +136,12 @@ public class Window extends JFrame {
             g2.setRenderingHints(new RenderingHints(
                 RenderingHints.KEY_ANTIALIASING,
                 RenderingHints.VALUE_ANTIALIAS_ON));
+            
             for (Layer layer: neuralNetwork.layers) {
                 for (Neuron neuron: layer.neurons) {
                     NX = CANVAS_WIDTH / (neuralNetwork.layers.size() + 1) * (neuralNetwork.layers.indexOf(layer) + 1);
                     NY = CANVAS_HEIGHT / (layer.neurons.size() + 1) * (layer.neurons.indexOf(neuron) + 1);
-                    neuron.setLocation(new Point(NX, NY));
-                    g2.setColor(neuron.getColor());
+                    		neuron.setLocation(new Point(NX, NY));
                 }
             }
 
@@ -144,19 +151,16 @@ public class Window extends JFrame {
                     (int) connection.N1.getLocation().getY(),
                     (int) connection.N2.getLocation().getX(),
                     (int) connection.N2.getLocation().getY(),
-                    (int)(connection.getValue() * 5),
+                    (int) (connection.getValue() * 5),
                     connection.getColor());
             }
 
             for (Layer layer: neuralNetwork.layers) {
                 for (Neuron neuron: layer.neurons) {
-                    NX = CANVAS_WIDTH / (neuralNetwork.layers.size() + 1) * (neuralNetwork.layers.indexOf(layer) + 1);
-                    NY = CANVAS_HEIGHT / (layer.neurons.size() + 1) * (layer.neurons.indexOf(neuron) + 1);
-                    neuron.setLocation(new Point(NX, NY));
                     g2.setColor(neuron.getColor());
-                    Drawing.drawCircle(g2, NX, NY, 100);
+                    Drawing.drawCircle(g2, neuron.getLocation().x, neuron.getLocation().y, 100);
                     g2.setColor(new Color(0, 0, 0));
-                    Drawing.drawText(g2, new Rectangle(NX - 50, NY - 50, 100, 100), Double.toString(((double) Math.round(neuron.getValue() * 100d) / 100d)), new Font("Monaco", 1, 20));
+                    Drawing.drawText(g2, new Rectangle(neuron.getLocation().x - 50, neuron.getLocation().y - 50, 100, 100), Double.toString(((double) Math.round(neuron.getValue() * 100d) / 100d)), new Font("Monaco", 1, 20));
                 }
             }
             // Your custom painting codes
@@ -168,7 +172,6 @@ public class Window extends JFrame {
             }
             for (Layer layer: neuralNetwork.layers) {
                 for (Neuron neuron: layer.neurons) {
-                    neuron.setValue(0.0);
                     neuron.setError(0.0);
                 }
             }

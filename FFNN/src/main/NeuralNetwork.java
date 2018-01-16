@@ -10,12 +10,13 @@ import main.NN.Neuron;
 
 public class NeuralNetwork {
 
-    public ArrayList < Double > Input = new ArrayList < Double > ();
-    public ArrayList < Layer > layers = new ArrayList < Layer > ();
-    public ArrayList < Connection > connections = new ArrayList < Connection > ();
+    public ArrayList < Double > Input = new ArrayList <Double> ();
+    public ArrayList < Layer > layers = new ArrayList <Layer> ();
+    public ArrayList < Connection > connections = new ArrayList <Connection> ();
     Color InputColor = new Color(255, 203, 69);
     Color HiddenColor = new Color(81, 204, 65);
     Color OutputColor = new Color(255, 98, 36);
+    Color BiasColor = new Color(255, 153, 248);
     Color color = new Color(0, 0, 0);
     Double TargetOutput;
     Double Error;
@@ -23,7 +24,7 @@ public class NeuralNetwork {
     Double MinRange = -2.0;
     Double MaxRange = 2.0;
 
-    public NeuralNetwork(int[] NeuralNetworkComposition, Double teachingRate) {
+    public NeuralNetwork(int[] NeuralNetworkComposition, int[] NeuralNetworkBiasComposition, Double teachingRate) {
         TeachingRate = teachingRate;
         for (int i = 0; i < NeuralNetworkComposition.length; i++) {
             layers.add(new Layer());
@@ -32,20 +33,30 @@ public class NeuralNetwork {
         for (Layer layer: layers) {
             if (layers.indexOf(layer) == 0) {
                 for (int i = 0; i < NeuralNetworkComposition[layers.indexOf(layer)]; i++) {
-                    layer.addNeuron(new Neuron(0d, layer, InputColor));
+                    layer.addNeuron(new Neuron(0d, layer, 1, InputColor));
                 }
             } else if (layers.indexOf(layer) == (layers.size() - 1)) {
                 for (int i = 0; i < NeuralNetworkComposition[layers.indexOf(layer)]; i++) {
-                    layer.addNeuron(new Neuron(0d, layer, OutputColor));
+                    layer.addNeuron(new Neuron(0d, layer, 1, OutputColor));
                     for (Neuron neuron: layers.get(layers.indexOf(layer) - 1).neurons) {
                         connections.add(new Connection(1d, neuron, layer.neurons.get(i), new Color(0, 0, 0)));
                     }
                 }
             } else {
                 for (int i = 0; i < NeuralNetworkComposition[layers.indexOf(layer)]; i++) {
-                    layer.addNeuron(new Neuron(0d, layer, HiddenColor));
+                		if (i==NeuralNetworkComposition[layers.indexOf(layer)]-1) {
+                			if(NeuralNetworkBiasComposition[layers.indexOf(layer)]==1) {
+                				layer.addNeuron(new Neuron(1d, layer, 2, BiasColor));
+                			} else {
+                				layer.addNeuron(new Neuron(0d, layer, 1, HiddenColor));
+                			}
+                		} else {
+                			layer.addNeuron(new Neuron(0d, layer, 1, HiddenColor));
+                		}
                     for (Neuron neuron: layers.get(layers.indexOf(layer) - 1).neurons) {
-                        connections.add(new Connection(1d, neuron, layer.neurons.get(i), new Color(0, 0, 0)));
+                    		if (layer.neurons.get(i).Type==1) {
+                    			connections.add(new Connection(1d, neuron, layer.neurons.get(i), new Color(0, 0, 0)));
+                    		}
                     }
                 }
             }
