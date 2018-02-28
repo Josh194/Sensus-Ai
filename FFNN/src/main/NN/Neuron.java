@@ -13,7 +13,7 @@ public class Neuron {
     Layer Layer;
     Color Color;
     Point Location;
-
+    
     public Neuron(Double value, Layer layer, int type, Color color) {
         Value = value;
         Layer = layer;

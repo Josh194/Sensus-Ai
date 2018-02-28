@@ -126,7 +126,7 @@ public class Window extends JFrame {
             setBackground(new Color(0, 66, 103)); // set background color for this JPanel
 
             loadInput("/Users/admin/Documents/Josh Files/Coding/FFNN/Input");
-
+            
             neuralNetwork.setInput(new ArrayList < Double > (Arrays.asList(Input)));
             neuralNetwork.feedForward();
             neuralNetwork.feedBackward();

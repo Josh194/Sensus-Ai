@@ -23,7 +23,7 @@ public class NeuralNetwork {
     Double TeachingRate;
     Double MinRange = -2.0;
     Double MaxRange = 2.0;
-
+    
     public NeuralNetwork(int[] NeuralNetworkComposition, int[] NeuralNetworkBiasComposition, Double teachingRate) {
         TeachingRate = teachingRate;
         for (int i = 0; i < NeuralNetworkComposition.length; i++) {
