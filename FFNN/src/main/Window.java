@@ -130,7 +130,7 @@ public class Window extends JFrame {
             neuralNetwork.setInput(new ArrayList < Double > (Arrays.asList(Input)));
             neuralNetwork.feedForward();
             neuralNetwork.feedBackward();
-
+            
             //Create a Graphics2D
             Graphics2D g2 = (Graphics2D) g;
             g2.setRenderingHints(new RenderingHints(

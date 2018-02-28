@@ -20,7 +20,7 @@ public class Neuron {
         Type = type;
         Color = color;
     }
-
+    
     public void update() {
     		if (Type==1) {
     			Value = ((MaxRange - MinRange) / (1 + (Math.pow(2.71828, -Value)))) + MinRange;

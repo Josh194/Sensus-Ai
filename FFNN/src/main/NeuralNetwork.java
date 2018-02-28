@@ -73,7 +73,7 @@ public class NeuralNetwork {
     public Double sigmoidDerivative(Double input) {
         return (((MaxRange - MinRange) * Math.pow(2.71828, input)) / Math.pow((Math.pow(2.71828, input) + 1), 2));
     }
-
+    
     public void setInput(ArrayList < Double > input) {
         Input = input;
         TargetOutput = Input.get(Input.size() - 1);
