@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import Graphics.Drawing;
 import main.NN.Connection;
 import main.NN.Layer;
 import main.NN.Neuron;
@@ -99,6 +100,7 @@ public class NeuralNetwork {
             Error = TargetOutput - neuron.getValue();
             neuron.setError(Error);
         }
+        Drawing.graphPoints.add(Error);
         System.out.println(Error);
     }
 

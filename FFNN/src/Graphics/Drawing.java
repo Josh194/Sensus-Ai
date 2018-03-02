@@ -2,12 +2,35 @@ package Graphics;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
+import java.util.ArrayList;
 
 public class Drawing {
+	
+	public static ArrayList<Double> graphPoints = new ArrayList<Double>();
+	public static Dimension graphSize;
+	public static Point graphLocation;
+	
+	public static void update(Graphics2D g2) {
+		
+		g2.setColor(Color.WHITE);
+		g2.drawLine(graphLocation.x,graphLocation.y, graphLocation.x+graphSize.width, graphLocation.y);
+		
+		for (Double point : graphPoints) {
+			g2.setColor(Color.BLACK);
+			g2.fillOval(graphLocation.x+((graphSize.width/graphPoints.size())*graphPoints.indexOf(point)),graphLocation.y-(int) (point*graphSize.height), 5, 5);
+		}
+		
+		if (graphPoints.size() > 25) {
+			graphPoints.remove(0);
+		}
+	}
+	
     public static void drawCircle(Graphics2D g2, int x, int y, int r) {
         x = x - (r / 2);
         y = y - (r / 2);

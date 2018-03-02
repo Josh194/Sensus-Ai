@@ -30,8 +30,7 @@ import main.NN.Layer;
 import main.NN.Neuron;
 
 @SuppressWarnings("serial")
-public class Window extends JFrame {
-    // Define constants
+public class Run extends JFrame {
     public static Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     public static final int CANVAS_WIDTH = (int) screenSize.getWidth();
     public static final int CANVAS_HEIGHT = (int) screenSize.getHeight();
@@ -56,19 +55,17 @@ public class Window extends JFrame {
     private static int InputLines;
     private static Double[] Input = new Double[neuralNetwork.layers.get(0).neurons.size() + 1];
 
-    // Declare an instance of the drawing canvas,
-    // which is an inner class called DrawCanvas extending javax.swing.JPanel.
     private DrawCanvas canvas;
 
-    // Constructor to set up the GUI components and event handlers
-    public Window() {
-        canvas = new DrawCanvas(); // Construct the drawing canvas
+    public Run() {
+    		Drawing.graphSize = new Dimension(100,50);
+    		Drawing.graphLocation = new Point(100,100);
+    		
+        canvas = new DrawCanvas();
         canvas.setPreferredSize(new Dimension(CANVAS_WIDTH, CANVAS_HEIGHT));
 
-        // Set the Drawing JPanel as the JFrame's content-pane
         Container cp = getContentPane();
         cp.add(canvas);
-        // or "setContentPane(canvas);"
 
         GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
 
@@ -77,13 +74,13 @@ public class Window extends JFrame {
             gd.setFullScreenWindow(this);
         } else {
             System.err.println("Full screen not supported");
-            setSize(100, 100); // just something to let you see the window
+            setSize(100, 100);
             setVisible(true);
         }
-        setDefaultCloseOperation(EXIT_ON_CLOSE); // Handle the CLOSE button
-        pack(); // Either pack() the components; or setSize()
-        setVisible(true); // "super" JFrame show
-        setTitle("Feed Forward Neural Network 1.0.0"); // "super" JFrame sets the title  
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        pack();
+        setVisible(true);
+        setTitle("Feed Forward Neural Network 1.2.1");
     }
 
     public static int getLines(String File) throws IOException {
@@ -114,16 +111,12 @@ public class Window extends JFrame {
             }
         }
     }
-
-    /**
-     * Define inner class DrawCanvas, which is a JPanel used for custom drawing.
-     */
+    
     private class DrawCanvas extends JPanel {
-        // Override paintComponent to perform your own painting
         @Override
         public void paintComponent(Graphics g) {
-            super.paintComponent(g); // paint parent's background
-            setBackground(new Color(0, 66, 103)); // set background color for this JPanel
+            super.paintComponent(g);
+            setBackground(new Color(0, 66, 103));
 
             loadInput("/Users/admin/Documents/Josh Files/Coding/FFNN/Input");
             
@@ -131,17 +124,18 @@ public class Window extends JFrame {
             neuralNetwork.feedForward();
             neuralNetwork.feedBackward();
             
-            //Create a Graphics2D
             Graphics2D g2 = (Graphics2D) g;
             g2.setRenderingHints(new RenderingHints(
                 RenderingHints.KEY_ANTIALIASING,
                 RenderingHints.VALUE_ANTIALIAS_ON));
             
+            Drawing.update(g2);
+            
             for (Layer layer: neuralNetwork.layers) {
                 for (Neuron neuron: layer.neurons) {
                     NX = CANVAS_WIDTH / (neuralNetwork.layers.size() + 1) * (neuralNetwork.layers.indexOf(layer) + 1);
                     NY = CANVAS_HEIGHT / (layer.neurons.size() + 1) * (layer.neurons.indexOf(neuron) + 1);
-                    		neuron.setLocation(new Point(NX, NY));
+                    	neuron.setLocation(new Point(NX, NY));
                 }
             }
 
@@ -163,11 +157,10 @@ public class Window extends JFrame {
                     Drawing.drawText(g2, new Rectangle(neuron.getLocation().x - 50, neuron.getLocation().y - 50, 100, 100), Double.toString(((double) Math.round(neuron.getValue() * 100d) / 100d)), new Font("Monaco", 1, 20));
                 }
             }
-            // Your custom painting codes
+            
             try {
                 Thread.sleep(50);
             } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
             for (Layer layer: neuralNetwork.layers) {
@@ -178,10 +171,8 @@ public class Window extends JFrame {
             repaint();
         }
     }
-
-    // The entry main method
+    
     public static void main(String[] args) {
-        // Run the GUI codes on the Event-Dispatching thread for thread safety
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -190,7 +181,7 @@ public class Window extends JFrame {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                new Window(); // Let the constructor do the job
+                new Run();
             }
         });
     }
