@@ -8,13 +8,35 @@ import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Ellipse2D;
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import main.Run;
 
 public class Drawing {
 	
 	public static ArrayList<Double> graphPoints = new ArrayList<Double>();
 	public static Dimension graphSize;
 	public static Point graphLocation;
+	public static Timer animation = new Timer();
+	public static Double animationX = -5d;
+	
+	public static void startAnimation() {
+		animation.schedule(new updateAnimation(), 10l);
+	}
+	
+	static class updateAnimation extends TimerTask {
+        public void run() {
+        		animationX = animationX + 0.02;
+        		if (animationX<5) {
+        			startAnimation();
+        		} else {
+        			animation.cancel();
+        		}
+        }
+    }
 	
 	public static void update(Graphics2D g2) {
 		
@@ -32,9 +54,15 @@ public class Drawing {
 	}
 	
     public static void drawCircle(Graphics2D g2, int x, int y, int r) {
+        r = (int) ((r)/(1+Math.pow(2.718, -1*animationX)));
         x = x - (r / 2);
         y = y - (r / 2);
-        g2.fillOval(x, y, r, r);
+        if (Run.shapes.contains(new Ellipse2D.Double(x,y,r,r))) {
+        	
+        } else {
+        		Run.shapes.add(new Ellipse2D.Double(x,y,r,r));
+        }
+        g2.fill(new Ellipse2D.Double(x,y,r,r));
     }
 
     public static void drawText(Graphics2D g2, Rectangle rect, String text, Font font) {
@@ -48,6 +76,7 @@ public class Drawing {
     public static void drawLine(Graphics2D g2, int x1, int y1, int x2, int y2, int size, Color color) {
         g2.setColor(color);
         g2.setStroke(new BasicStroke(java.lang.Math.abs(size)));
-        g2.drawLine(x1, y1, x2, y2);
+        g2.drawLine((x1+x2)/2,(y1+y2)/2,(int) (((x2-((x1+x2)/2))/(1+Math.pow(2.718, -1*animationX)))+((x1+x2)/2)),(int) (((y2-((y1+y2)/2))/(1+Math.pow(2.718, -1*animationX)))+((y1+y2)/2)));
+        g2.drawLine((x1+x2)/2,(y1+y2)/2,(int) (((x1-((x2+x1)/2))/(1+Math.pow(2.718, -1*animationX)))+((x2+x1)/2)),(int) (((y1-((y2+y1)/2))/(1+Math.pow(2.718, -1*animationX)))+((y2+y1)/2)));
     }
 }

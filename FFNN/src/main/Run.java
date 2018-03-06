@@ -11,7 +11,11 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.Shape;
 import java.awt.Toolkit;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.geom.Ellipse2D;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
@@ -31,6 +35,7 @@ import main.NN.Neuron;
 
 @SuppressWarnings("serial")
 public class Run extends JFrame {
+    public static ArrayList<Shape> shapes = new ArrayList<Shape>();
     public static Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     public static final int CANVAS_WIDTH = (int) screenSize.getWidth();
     public static final int CANVAS_HEIGHT = (int) screenSize.getHeight();
@@ -61,6 +66,8 @@ public class Run extends JFrame {
     		Drawing.graphSize = new Dimension(100,50);
     		Drawing.graphLocation = new Point(100,100);
     		
+    		Drawing.startAnimation();
+    		
         canvas = new DrawCanvas();
         canvas.setPreferredSize(new Dimension(CANVAS_WIDTH, CANVAS_HEIGHT));
 
@@ -81,6 +88,20 @@ public class Run extends JFrame {
         pack();
         setVisible(true);
         setTitle("Feed Forward Neural Network 1.2.1");
+        
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent me) {
+                super.mouseClicked(me);
+                for (Shape s : shapes) {
+                    if (s.contains(me.getPoint())) {
+                        if (s instanceof Ellipse2D) {
+                        		
+                        }
+                    }
+                }
+            }
+        });
     }
 
     public static int getLines(String File) throws IOException {

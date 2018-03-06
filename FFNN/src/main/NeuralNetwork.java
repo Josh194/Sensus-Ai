@@ -62,7 +62,7 @@ public class NeuralNetwork {
                 }
             }
         }
-
+        
         for (Layer layer: layers) {
             for (Neuron neuron: layer.neurons) {
                 neuron.setMinRange(MinRange);
