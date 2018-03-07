@@ -8,6 +8,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
+import java.awt.GridBagLayout;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
@@ -37,8 +38,10 @@ import main.NN.Neuron;
 public class Run extends JFrame {
     public static ArrayList<Shape> shapes = new ArrayList<Shape>();
     public static Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-    public static final int CANVAS_WIDTH = (int) screenSize.getWidth();
-    public static final int CANVAS_HEIGHT = (int) screenSize.getHeight();
+    public static final int CANVAS_WIDTH = 1200;
+    public static final int CANVAS_HEIGHT = 1050;
+    public static final int GRAPH_WIDTH = 440;
+    public static final int GRAPH_HEIGHT = 440;
     public static NeuralNetwork neuralNetwork = new NeuralNetwork(new int[] {
         2,
         4,
@@ -60,19 +63,27 @@ public class Run extends JFrame {
     private static int InputLines;
     private static Double[] Input = new Double[neuralNetwork.layers.get(0).neurons.size() + 1];
 
+    private JPanel container = new JPanel();
     private DrawCanvas canvas;
+    private GraphPanel graphPanel;
 
     public Run() {
-    		Drawing.graphSize = new Dimension(100,50);
-    		Drawing.graphLocation = new Point(100,100);
+    		Drawing.graphSize = new Dimension(GRAPH_WIDTH,GRAPH_HEIGHT);
+    		Drawing.graphLocation = new Point(20,GRAPH_HEIGHT);
     		
     		Drawing.startAnimation();
     		
+    		container.setLayout(new GridBagLayout());
         canvas = new DrawCanvas();
         canvas.setPreferredSize(new Dimension(CANVAS_WIDTH, CANVAS_HEIGHT));
+        graphPanel = new GraphPanel();
+        graphPanel.setPreferredSize(new Dimension(GRAPH_WIDTH+40, GRAPH_HEIGHT+40));
+        
+        container.add(canvas);
+        container.add(graphPanel);
 
         Container cp = getContentPane();
-        cp.add(canvas);
+        cp.add(container);
 
         GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
 
@@ -150,7 +161,8 @@ public class Run extends JFrame {
                 RenderingHints.KEY_ANTIALIASING,
                 RenderingHints.VALUE_ANTIALIAS_ON));
             
-            Drawing.update(g2);
+            g2.setColor(Color.BLACK);
+            g2.drawRect(10, 10, CANVAS_WIDTH-20, CANVAS_HEIGHT-20);
             
             for (Layer layer: neuralNetwork.layers) {
                 for (Neuron neuron: layer.neurons) {
@@ -189,6 +201,29 @@ public class Run extends JFrame {
                     neuron.setError(0.0);
                 }
             }
+            
+            repaint();
+        }
+    }
+    
+    private class GraphPanel extends JPanel {
+        @Override
+        public void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            setBackground(new Color(0, 66, 103));
+            
+            Graphics2D g2 = (Graphics2D) g;
+            g2.setRenderingHints(new RenderingHints(
+                RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON));
+            
+            g2.drawRect(10, 10, GRAPH_WIDTH+20, GRAPH_HEIGHT+20);
+            g2.setColor(Color.WHITE);
+            g2.drawLine(20, GRAPH_HEIGHT+20, GRAPH_WIDTH+20, GRAPH_HEIGHT+20);
+            g2.drawLine(20, GRAPH_HEIGHT+20, 20, 20);
+            
+            Drawing.update(g2);
+            
             repaint();
         }
     }

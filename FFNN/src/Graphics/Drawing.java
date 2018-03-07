@@ -40,15 +40,12 @@ public class Drawing {
 	
 	public static void update(Graphics2D g2) {
 		
-		g2.setColor(Color.WHITE);
-		g2.drawLine(graphLocation.x,graphLocation.y, graphLocation.x+graphSize.width, graphLocation.y);
-		
 		for (Double point : graphPoints) {
 			g2.setColor(Color.BLACK);
-			g2.fillOval(graphLocation.x+((graphSize.width/graphPoints.size())*graphPoints.indexOf(point)),graphLocation.y-(int) (point*graphSize.height), 5, 5);
+			g2.fillOval(graphLocation.x+((graphSize.width/graphPoints.size())*graphPoints.indexOf(point)),graphLocation.y-(int) (Math.abs(point)*240)+20, 5, 5);
 		}
 		
-		if (graphPoints.size() > 25) {
+		if (graphPoints.size() == 30) {
 			graphPoints.remove(0);
 		}
 	}
