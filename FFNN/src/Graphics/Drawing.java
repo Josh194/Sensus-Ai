@@ -18,8 +18,11 @@ import main.Run;
 public class Drawing {
 	
 	public static ArrayList<Double> graphPoints = new ArrayList<Double>();
+	public static ArrayList<Double> outputPoints = new ArrayList<Double>();
 	public static Dimension graphSize;
 	public static Point graphLocation;
+	public static Dimension outputSize;
+	public static Point outputLocation;
 	public static Timer animation = new Timer();
 	public static Double animationX = -5d;
 	
@@ -47,6 +50,18 @@ public class Drawing {
 		
 		if (graphPoints.size() == 30) {
 			graphPoints.remove(0);
+		}
+	}
+	
+	public static void updateOutput(Graphics2D g2) {
+		
+		for (Double point : outputPoints) {
+			g2.setColor(Color.BLACK);
+			g2.fillOval(outputLocation.x+((outputSize.width/outputPoints.size())*outputPoints.indexOf(point)),outputLocation.y-(int) (Math.abs(point)*240)+20, 5, 5);
+		}
+		
+		if (outputPoints.size() == 30) {
+			outputPoints.remove(0);
 		}
 	}
 	

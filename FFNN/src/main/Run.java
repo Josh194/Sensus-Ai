@@ -1,5 +1,6 @@
 package main;
 
+import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -8,12 +9,16 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
+import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Ellipse2D;
@@ -25,8 +30,13 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
 import Graphics.Drawing;
@@ -42,6 +52,10 @@ public class Run extends JFrame {
     public static final int CANVAS_HEIGHT = 1050;
     public static final int GRAPH_WIDTH = 440;
     public static final int GRAPH_HEIGHT = 440;
+    public static final int CONTROL_WIDTH = 480;
+    public static final int CONTROL_HEIGHT = 570;
+    public static final int OUTPUT_WIDTH = 440;
+    public static final int OUTPUT_HEIGHT = 530;
     public static NeuralNetwork neuralNetwork = new NeuralNetwork(new int[] {
         2,
         4,
@@ -66,10 +80,19 @@ public class Run extends JFrame {
     private JPanel container = new JPanel();
     private DrawCanvas canvas;
     private GraphPanel graphPanel;
+    private JPanel controlPanel;
+    private NNCustomization customizationPanel;
+    private OutputPanel outputPanel;
+    
+    private JTextField LearningRate = new JTextField(6);
+    private JButton outputPanelButton = new JButton("Output Graph");
+    private JButton customizationPanelButton = new JButton("Customize");
 
     public Run() {
     		Drawing.graphSize = new Dimension(GRAPH_WIDTH,GRAPH_HEIGHT);
     		Drawing.graphLocation = new Point(20,GRAPH_HEIGHT);
+    		Drawing.outputSize = new Dimension(OUTPUT_WIDTH,OUTPUT_HEIGHT);
+    		Drawing.outputLocation = new Point(20,OUTPUT_HEIGHT);
     		
     		Drawing.startAnimation();
     		
@@ -78,9 +101,60 @@ public class Run extends JFrame {
         canvas.setPreferredSize(new Dimension(CANVAS_WIDTH, CANVAS_HEIGHT));
         graphPanel = new GraphPanel();
         graphPanel.setPreferredSize(new Dimension(GRAPH_WIDTH+40, GRAPH_HEIGHT+40));
+        controlPanel = new JPanel();
+        controlPanel.setLayout(new CardLayout());
+        customizationPanel = new NNCustomization();
+        customizationPanel.setPreferredSize(new Dimension(CONTROL_WIDTH, CONTROL_HEIGHT));
+        outputPanel = new OutputPanel();
+        outputPanel.setPreferredSize(new Dimension(OUTPUT_WIDTH+40, OUTPUT_HEIGHT+40));
         
-        container.add(canvas);
-        container.add(graphPanel);
+        Action LearningRateChange = new AbstractAction()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                neuralNetwork.TeachingRate = Double.parseDouble(LearningRate.getText());
+            }
+        };
+        
+        outputPanelButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+        			((CardLayout) (controlPanel.getLayout())).show(controlPanel, "outputPanel");
+            }
+        });
+        
+        customizationPanelButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+            		((CardLayout) (controlPanel.getLayout())).show(controlPanel, "customizationPanel");
+            }
+        });
+        
+        LearningRate.addActionListener(LearningRateChange);
+        
+        LearningRate.setBounds(110, 20, 100, 20);
+        customizationPanelButton.setBounds(CONTROL_WIDTH-140, 20, 120, 25);
+        outputPanelButton.setBounds(CONTROL_WIDTH-140, 20, 120, 25);
+        
+        customizationPanel.setLayout(null);
+        customizationPanel.add(LearningRate);
+        
+        JLabel LearningRateLabel = new JLabel("Learning Rate:");
+        LearningRateLabel.setBounds(20, 20, 100, 20);	
+        
+        customizationPanel.add(LearningRateLabel);
+        customizationPanel.add(outputPanelButton);
+        
+        outputPanel.setLayout(null);
+        outputPanel.add(customizationPanelButton);
+        
+        controlPanel.add(customizationPanel, "customizationPanel");
+        controlPanel.add(outputPanel, "outputPanel");
+        
+        container.add(canvas, new GridBagConstraints(0, 0, 2, 3, 0d, 0d, GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+        container.add(graphPanel, new GridBagConstraints(2, 1, 1, 1, 0d, 0d, GridBagConstraints.LINE_END, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+        container.add(controlPanel, new GridBagConstraints(2, 2, 1, 1, 0d, 0d, GridBagConstraints.FIRST_LINE_END, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
 
         Container cp = getContentPane();
         cp.add(container);
@@ -223,6 +297,45 @@ public class Run extends JFrame {
             g2.drawLine(20, GRAPH_HEIGHT+20, 20, 20);
             
             Drawing.update(g2);
+            
+            repaint();
+        }
+    }
+    
+    private class OutputPanel extends JPanel {
+        @Override
+        public void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            setBackground(new Color(0, 66, 103));
+            
+            Graphics2D g2 = (Graphics2D) g;
+            g2.setRenderingHints(new RenderingHints(
+                RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON));
+            
+            g2.drawRect(10, 10, GRAPH_WIDTH+20, GRAPH_HEIGHT+110);
+            g2.setColor(Color.WHITE);
+            g2.drawLine(20, GRAPH_HEIGHT+110, GRAPH_WIDTH+20, GRAPH_HEIGHT+110);
+            g2.drawLine(20, GRAPH_HEIGHT+110, 20, 20);
+            
+            Drawing.updateOutput(g2);
+            
+            repaint();
+        }
+    }
+    
+    private class NNCustomization extends JPanel { 	
+    		@Override
+        public void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            setBackground(new Color(0, 66, 103));
+            
+            Graphics2D g2 = (Graphics2D) g;
+            g2.setRenderingHints(new RenderingHints(
+                RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON));
+            
+            g2.drawRect(10, 10, CONTROL_WIDTH-20, CONTROL_HEIGHT-20);
             
             repaint();
         }

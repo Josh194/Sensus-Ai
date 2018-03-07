@@ -11,9 +11,10 @@ import main.NN.Neuron;
 
 public class NeuralNetwork {
 
-    public ArrayList < Double > Input = new ArrayList <Double> ();
-    public ArrayList < Layer > layers = new ArrayList <Layer> ();
-    public ArrayList < Connection > connections = new ArrayList <Connection> ();
+    public ArrayList <Double> Input = new ArrayList <Double> ();
+    public ArrayList <Layer> layers = new ArrayList <Layer> ();
+    public ArrayList <Connection> connections = new ArrayList <Connection> ();
+    public Double TeachingRate;
     Color InputColor = new Color(255, 203, 69);
     Color HiddenColor = new Color(81, 204, 65);
     Color OutputColor = new Color(255, 98, 36);
@@ -21,7 +22,7 @@ public class NeuralNetwork {
     Color color = new Color(0, 0, 0);
     Double TargetOutput;
     Double Error;
-    Double TeachingRate;
+    Double Output;
     Double MinRange = -2.0;
     Double MaxRange = 2.0;
     
@@ -90,7 +91,9 @@ public class NeuralNetwork {
 
         for (Layer layer: layers) {
             for (Neuron neuron: layer.neurons) {
-                if (neuron.getColor() == InputColor) {} else {
+                if (neuron.getColor() == InputColor) {
+                	
+                } else {
                     neuron.update();
                 }
             }
@@ -99,8 +102,13 @@ public class NeuralNetwork {
         for (Neuron neuron: layers.get(layers.size() - 1).neurons) {
             Error = TargetOutput - neuron.getValue();
             neuron.setError(Error);
+            Output=neuron.getValue();
+            if (Drawing.outputPoints.size() == 30) {
+            		Drawing.outputPoints.remove(0);
+            }
         }
         Drawing.graphPoints.add(Error);
+        Drawing.outputPoints.add(Output);
         System.out.println(Error);
     }
 
