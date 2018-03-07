@@ -172,7 +172,7 @@ public class Run extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         pack();
         setVisible(true);
-        setTitle("Feed Forward Neural Network 1.2.1");
+        setTitle("Feed Forward Neural Network 2.0.0");
         
         addMouseListener(new MouseAdapter() {
             @Override
