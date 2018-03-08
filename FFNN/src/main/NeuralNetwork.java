@@ -27,6 +27,8 @@ public class NeuralNetwork {
     Double MaxRange = 2.0;
     
     public NeuralNetwork(int[] NeuralNetworkComposition, int[] NeuralNetworkBiasComposition, Double teachingRate) {
+        connections.clear();
+        layers.clear();
         TeachingRate = teachingRate;
         for (int i = 0; i < NeuralNetworkComposition.length; i++) {
             layers.add(new Layer());

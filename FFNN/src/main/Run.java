@@ -38,6 +38,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import Graphics.Drawing;
 import main.NN.Connection;
@@ -84,7 +86,14 @@ public class Run extends JFrame {
     private NNCustomization customizationPanel;
     private OutputPanel outputPanel;
     
-    private JTextField LearningRate = new JTextField(6);
+    private int[] NeuronComposition;
+    private int[] BiasComposition;
+    
+    private JTextField LearningRate = new JTextField();
+    private JTextField CustomNeurons = new JTextField();
+    private JTextField CustomBias = new JTextField();
+    private JButton Pause = new JButton("Pause");
+    private JButton SetNN = new JButton("Apply");
     private JButton outputPanelButton = new JButton("Output Graph");
     private JButton customizationPanelButton = new JButton("Customize");
 
@@ -131,14 +140,29 @@ public class Run extends JFrame {
             }
         });
         
+        SetNN.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+            		NeuronComposition = Arrays.stream(CustomNeurons.getText().substring(1, CustomNeurons.getText().length()-1).split(",")).map(String::trim).mapToInt(Integer::parseInt).toArray();
+            		BiasComposition = Arrays.stream(CustomBias.getText().substring(1, CustomBias.getText().length()-1).split(",")).map(String::trim).mapToInt(Integer::parseInt).toArray();
+            		neuralNetwork = new NeuralNetwork(NeuronComposition, BiasComposition, Double.parseDouble(LearningRate.getText()));
+            }
+        });
+        
         LearningRate.addActionListener(LearningRateChange);
         
+        CustomBias.setBounds(110, 80, 100, 20);
+        CustomNeurons.setBounds(110, 60, 100, 20);
         LearningRate.setBounds(110, 20, 100, 20);
         customizationPanelButton.setBounds(CONTROL_WIDTH-140, 20, 120, 25);
         outputPanelButton.setBounds(CONTROL_WIDTH-140, 20, 120, 25);
+        SetNN.setBounds(110, 100, 100, 20);
         
         customizationPanel.setLayout(null);
         customizationPanel.add(LearningRate);
+        customizationPanel.add(CustomNeurons);
+        customizationPanel.add(CustomBias);
+        customizationPanel.add(SetNN);
         
         JLabel LearningRateLabel = new JLabel("Learning Rate:");
         LearningRateLabel.setBounds(20, 20, 100, 20);	
