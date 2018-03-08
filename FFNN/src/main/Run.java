@@ -22,6 +22,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Ellipse2D;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
@@ -30,6 +32,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
@@ -38,8 +41,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 
 import Graphics.Drawing;
 import main.NN.Connection;
@@ -58,6 +59,12 @@ public class Run extends JFrame {
     public static final int CONTROL_HEIGHT = 570;
     public static final int OUTPUT_WIDTH = 440;
     public static final int OUTPUT_HEIGHT = 530;
+    public static final int NEURON_INFO_WIDTH = 480;
+    public static final int NEURON_INFO_HEIGHT = 570;
+    
+    public static BufferedImage BasicNeuronImage;
+    
+    public Boolean Paused = false;
     public static NeuralNetwork neuralNetwork = new NeuralNetwork(new int[] {
         2,
         4,
@@ -85,6 +92,7 @@ public class Run extends JFrame {
     private JPanel controlPanel;
     private NNCustomization customizationPanel;
     private OutputPanel outputPanel;
+    private ViewNeuron viewNeuron;
     
     private int[] NeuronComposition;
     private int[] BiasComposition;
@@ -95,9 +103,20 @@ public class Run extends JFrame {
     private JButton Pause = new JButton("Pause");
     private JButton SetNN = new JButton("Apply");
     private JButton outputPanelButton = new JButton("Output Graph");
+    private JButton neuronPanelButton = new JButton("Inspect");
     private JButton customizationPanelButton = new JButton("Customize");
+    private JButton outputPanelButton2 = new JButton("Output Graph");
+    private JButton neuronPanelButton2 = new JButton("Inspect");
+    private JButton customizationPanelButton2 = new JButton("Customize");
 
     public Run() {
+    		
+    			try {
+				BasicNeuronImage = ImageIO.read(new File("src/Graphics/Simple_Neuron.png"));
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+    	
     		Drawing.graphSize = new Dimension(GRAPH_WIDTH,GRAPH_HEIGHT);
     		Drawing.graphLocation = new Point(20,GRAPH_HEIGHT);
     		Drawing.outputSize = new Dimension(OUTPUT_WIDTH,OUTPUT_HEIGHT);
@@ -116,6 +135,8 @@ public class Run extends JFrame {
         customizationPanel.setPreferredSize(new Dimension(CONTROL_WIDTH, CONTROL_HEIGHT));
         outputPanel = new OutputPanel();
         outputPanel.setPreferredSize(new Dimension(OUTPUT_WIDTH+40, OUTPUT_HEIGHT+40));
+        viewNeuron = new ViewNeuron();
+        viewNeuron.setPreferredSize(new Dimension(NEURON_INFO_WIDTH, NEURON_INFO_HEIGHT));
         
         Action LearningRateChange = new AbstractAction()
         {
@@ -126,6 +147,20 @@ public class Run extends JFrame {
             }
         };
         
+        Pause.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+        			Paused = !Paused;
+            }
+        });
+        
+        neuronPanelButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+        			((CardLayout) (controlPanel.getLayout())).show(controlPanel, "viewNeuron");
+            }
+        });
+        
         outputPanelButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -134,6 +169,27 @@ public class Run extends JFrame {
         });
         
         customizationPanelButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+            		((CardLayout) (controlPanel.getLayout())).show(controlPanel, "customizationPanel");
+            }
+        });
+        
+        neuronPanelButton2.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+        			((CardLayout) (controlPanel.getLayout())).show(controlPanel, "viewNeuron");
+            }
+        });
+        
+        outputPanelButton2.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+        			((CardLayout) (controlPanel.getLayout())).show(controlPanel, "outputPanel");
+            }
+        });
+        
+        customizationPanelButton2.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
             		((CardLayout) (controlPanel.getLayout())).show(controlPanel, "customizationPanel");
@@ -151,14 +207,20 @@ public class Run extends JFrame {
         
         LearningRate.addActionListener(LearningRateChange);
         
-        CustomBias.setBounds(110, 80, 100, 20);
-        CustomNeurons.setBounds(110, 60, 100, 20);
-        LearningRate.setBounds(110, 20, 100, 20);
+        CustomBias.setBounds(20, 140, 100, 20);
+        CustomNeurons.setBounds(20, 100, 100, 20);
+        LearningRate.setBounds(20, 40, 100, 20);
+        Pause.setBounds(360, 530, 100, 20);
         customizationPanelButton.setBounds(CONTROL_WIDTH-140, 20, 120, 25);
         outputPanelButton.setBounds(CONTROL_WIDTH-140, 20, 120, 25);
-        SetNN.setBounds(110, 100, 100, 20);
+        neuronPanelButton.setBounds(CONTROL_WIDTH-140, 55, 120, 25);
+        customizationPanelButton2.setBounds(CONTROL_WIDTH-140, 20, 120, 25);
+        outputPanelButton2.setBounds(CONTROL_WIDTH-140, 60, 120, 25);
+        neuronPanelButton2.setBounds(CONTROL_WIDTH-140, 55, 120, 25);
+        SetNN.setBounds(20, 530, 100, 20);
         
         customizationPanel.setLayout(null);
+        customizationPanel.add(Pause);
         customizationPanel.add(LearningRate);
         customizationPanel.add(CustomNeurons);
         customizationPanel.add(CustomBias);
@@ -166,15 +228,28 @@ public class Run extends JFrame {
         
         JLabel LearningRateLabel = new JLabel("Learning Rate:");
         LearningRateLabel.setBounds(20, 20, 100, 20);	
+        JLabel CustomNeuronsLabel = new JLabel("Neuron Layout:");
+        CustomNeuronsLabel.setBounds(20, 80, 100, 20);	
+        JLabel CustomBiasLabel = new JLabel("Bias Layout:");
+        CustomBiasLabel.setBounds(20, 120, 100, 20);	
         
         customizationPanel.add(LearningRateLabel);
+        customizationPanel.add(CustomNeuronsLabel);
+        customizationPanel.add(CustomBiasLabel);
         customizationPanel.add(outputPanelButton);
+        customizationPanel.add(neuronPanelButton);
         
         outputPanel.setLayout(null);
         outputPanel.add(customizationPanelButton);
+        outputPanel.add(neuronPanelButton2);
+        
+        viewNeuron.setLayout(null);
+        viewNeuron.add(customizationPanelButton2);
+        viewNeuron.add(outputPanelButton2);
         
         controlPanel.add(customizationPanel, "customizationPanel");
         controlPanel.add(outputPanel, "outputPanel");
+        controlPanel.add(viewNeuron, "viewNeuron");
         
         container.add(canvas, new GridBagConstraints(0, 0, 2, 3, 0d, 0d, GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
         container.add(graphPanel, new GridBagConstraints(2, 1, 1, 1, 0d, 0d, GridBagConstraints.LINE_END, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
@@ -250,9 +325,11 @@ public class Run extends JFrame {
 
             loadInput("/Users/admin/Documents/Josh Files/Coding/FFNN/Input");
             
-            neuralNetwork.setInput(new ArrayList < Double > (Arrays.asList(Input)));
-            neuralNetwork.feedForward();
-            neuralNetwork.feedBackward();
+            if (Paused == false) {
+                neuralNetwork.setInput(new ArrayList < Double > (Arrays.asList(Input)));
+                neuralNetwork.feedForward();
+                neuralNetwork.feedBackward();
+            }
             
             Graphics2D g2 = (Graphics2D) g;
             g2.setRenderingHints(new RenderingHints(
@@ -363,6 +440,24 @@ public class Run extends JFrame {
             
             repaint();
         }
+    }
+    
+    private class ViewNeuron extends JPanel { 	
+		@Override
+		public void paintComponent(Graphics g) {
+			super.paintComponent(g);
+        		setBackground(new Color(0, 66, 103));
+        
+        		Graphics2D g2 = (Graphics2D) g;
+        		g2.setRenderingHints(new RenderingHints(
+        			RenderingHints.KEY_ANTIALIASING,
+            		RenderingHints.VALUE_ANTIALIAS_ON));
+        		
+        		g2.drawImage(BasicNeuronImage, null, 0, 0);
+        		g2.drawRect(10, 10, NEURON_INFO_WIDTH-20, NEURON_INFO_HEIGHT-20);
+        
+        		repaint();
+		}
     }
     
     public static void main(String[] args) {
