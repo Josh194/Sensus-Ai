@@ -22,6 +22,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileReader;
@@ -63,8 +65,14 @@ public class Run extends JFrame {
     public static final int NEURON_INFO_HEIGHT = 570;
     
     public static BufferedImage BasicNeuronImage;
+    public static BufferedImage BiasNeuronImage;
+    public static BufferedImage InputNeuronImage;
+    public static BufferedImage OutputNeuronImage;
+    public static int SelectedNeuronType = 0;
+    public static boolean FoundType = false;
     
-    public Boolean Paused = false;
+    public Boolean Paused = true;
+    public String InputString = null;
     public static NeuralNetwork neuralNetwork = new NeuralNetwork(new int[] {
         2,
         4,
@@ -85,6 +93,7 @@ public class Run extends JFrame {
     private static int InputLine = 0;
     private static int InputLines;
     private static Double[] Input = new Double[neuralNetwork.layers.get(0).neurons.size() + 1];
+    Connection connectionToRemove = null;
 
     private JPanel container = new JPanel();
     private DrawCanvas canvas;
@@ -100,6 +109,7 @@ public class Run extends JFrame {
     private JTextField LearningRate = new JTextField();
     private JTextField CustomNeurons = new JTextField();
     private JTextField CustomBias = new JTextField();
+    private JTextField InputLocation = new JTextField();
     private JButton Pause = new JButton("Pause");
     private JButton SetNN = new JButton("Apply");
     private JButton outputPanelButton = new JButton("Output Graph");
@@ -113,6 +123,9 @@ public class Run extends JFrame {
     		
     			try {
 				BasicNeuronImage = ImageIO.read(new File("src/Graphics/Simple_Neuron.png"));
+				BiasNeuronImage = ImageIO.read(new File("src/Graphics/Simple_Neuron.png"));
+				InputNeuronImage = ImageIO.read(new File("src/Graphics/Simple_Neuron.png"));
+				OutputNeuronImage = ImageIO.read(new File("src/Graphics/Simple_Neuron.png"));
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
@@ -146,6 +159,61 @@ public class Run extends JFrame {
                 neuralNetwork.TeachingRate = Double.parseDouble(LearningRate.getText());
             }
         };
+        
+        canvas.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent me) {
+                super.mouseClicked(me);
+                
+                Double distanceToLine = 10000d;
+                Line2D closestLine = null;
+                
+                for (Shape s : shapes) {
+                		if (s instanceof Line2D) {
+                			if(getDistanceToLine(((Line2D) s).getP1(), ((Line2D) s).getP2(), me.getPoint()) < distanceToLine) {
+                				distanceToLine = getDistanceToLine(((Line2D) s).getP1(), ((Line2D) s).getP2(), me.getPoint());
+                				closestLine = ((Line2D) s);
+                			}
+                		}
+                }
+                
+                for (Shape s : shapes) {
+                    if (s.contains(me.getPoint())) {
+                        if (s instanceof Ellipse2D) {
+                        		for (Layer layer: neuralNetwork.layers) {
+                        			for (Neuron neuron: layer.neurons) {
+                                    	if (neuron.getLocation().equals(new Point(s.getBounds().getLocation().x+(100/2),s.getBounds().getLocation().y+(100/2)))) {
+                                    		SelectedNeuronType=neuron.Type;
+                                    		FoundType=true;
+                                   	}
+                        			}
+                        		}
+                        }
+                    }
+                    
+                    if (distanceToLine < 10) {
+                			for (Connection connection: neuralNetwork.connections) {
+                				if (connection.N1.getLocation().equals((closestLine.getP1())) && connection.N2.getLocation().equals((closestLine.getP2()))) {
+                					connectionToRemove = connection;
+                				}
+                			}
+                    }
+                }
+                
+                if(FoundType) {
+                		FoundType=false;
+                } else {
+                		SelectedNeuronType=0;
+                }
+                
+                if(distanceToLine < 10) {
+        				shapes.remove(closestLine);
+                }
+
+                Run.neuralNetwork.connections.remove(connectionToRemove);
+                distanceToLine = 10000d;
+            }
+        });
         
         Pause.addActionListener(new ActionListener() {
             @Override
@@ -199,6 +267,14 @@ public class Run extends JFrame {
         SetNN.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+            		shapes.clear();
+            		Drawing.Added=false;
+            		InputString = InputLocation.getText();
+            		try {
+						InputLines = getLines(InputString);
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
             		NeuronComposition = Arrays.stream(CustomNeurons.getText().substring(1, CustomNeurons.getText().length()-1).split(",")).map(String::trim).mapToInt(Integer::parseInt).toArray();
             		BiasComposition = Arrays.stream(CustomBias.getText().substring(1, CustomBias.getText().length()-1).split(",")).map(String::trim).mapToInt(Integer::parseInt).toArray();
             		neuralNetwork = new NeuralNetwork(NeuronComposition, BiasComposition, Double.parseDouble(LearningRate.getText()));
@@ -218,6 +294,7 @@ public class Run extends JFrame {
         outputPanelButton2.setBounds(CONTROL_WIDTH-140, 60, 120, 25);
         neuronPanelButton2.setBounds(CONTROL_WIDTH-140, 55, 120, 25);
         SetNN.setBounds(20, 530, 100, 20);
+        InputLocation.setBounds(20, 180, 100, 20);
         
         customizationPanel.setLayout(null);
         customizationPanel.add(Pause);
@@ -225,17 +302,21 @@ public class Run extends JFrame {
         customizationPanel.add(CustomNeurons);
         customizationPanel.add(CustomBias);
         customizationPanel.add(SetNN);
+        customizationPanel.add(InputLocation);
         
         JLabel LearningRateLabel = new JLabel("Learning Rate:");
         LearningRateLabel.setBounds(20, 20, 100, 20);	
-        JLabel CustomNeuronsLabel = new JLabel("Neuron Layout:");
-        CustomNeuronsLabel.setBounds(20, 80, 100, 20);	
-        JLabel CustomBiasLabel = new JLabel("Bias Layout:");
-        CustomBiasLabel.setBounds(20, 120, 100, 20);	
+        JLabel CustomNeuronsLabel = new JLabel("Neuron Layout: (Ex: [2,5,5,1])");
+        CustomNeuronsLabel.setBounds(20, 80, 250, 20);	
+        JLabel CustomBiasLabel = new JLabel("Bias Layout: (Ex: [1,1,0,0])");
+        CustomBiasLabel.setBounds(20, 120, 250, 20);
+        JLabel InputLabel = new JLabel("Input Location:");
+        InputLabel.setBounds(20, 160, 100, 20);	
         
         customizationPanel.add(LearningRateLabel);
         customizationPanel.add(CustomNeuronsLabel);
         customizationPanel.add(CustomBiasLabel);
+        customizationPanel.add(InputLabel);
         customizationPanel.add(outputPanelButton);
         customizationPanel.add(neuronPanelButton);
         
@@ -271,22 +352,14 @@ public class Run extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         pack();
         setVisible(true);
-        setTitle("Feed Forward Neural Network 2.2.0");
-        
-        addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent me) {
-                super.mouseClicked(me);
-                for (Shape s : shapes) {
-                    if (s.contains(me.getPoint())) {
-                        if (s instanceof Ellipse2D) {
-                        		
-                        }
-                    }
-                }
-            }
-        });
+        setTitle("Feed Forward Neural Network 1.0.0");
     }
+    
+    public double getDistanceToLine(Point2D A, Point2D B, Point P) {
+        double normalLength = Math.sqrt((B.getX()-A.getX())*(B.getX()-A.getX())+(B.getY()-A.getY())*(B.getY()-A.getY()));
+        return Math.abs((P.x-A.getX())*(B.getY()-A.getY())-(P.y-A.getY())*(B.getX()-A.getX()))/normalLength;
+    }
+
 
     public static int getLines(String File) throws IOException {
         try (
@@ -323,10 +396,13 @@ public class Run extends JFrame {
             super.paintComponent(g);
             setBackground(new Color(0, 66, 103));
 
-            loadInput("/Users/admin/Documents/Josh Files/Coding/FFNN/Input");
+            if(InputString!=null) {
+            		loadInput(InputString);
+            }
+
             
             if (Paused == false) {
-                neuralNetwork.setInput(new ArrayList < Double > (Arrays.asList(Input)));
+                neuralNetwork.setInput(new ArrayList <Double> (Arrays.asList(Input)));
                 neuralNetwork.feedForward();
                 neuralNetwork.feedBackward();
             }
@@ -356,7 +432,7 @@ public class Run extends JFrame {
                     (int) (connection.getValue() * 5),
                     connection.getColor());
             }
-
+            
             for (Layer layer: neuralNetwork.layers) {
                 for (Neuron neuron: layer.neurons) {
                     g2.setColor(neuron.getColor());
@@ -365,6 +441,7 @@ public class Run extends JFrame {
                     Drawing.drawText(g2, new Rectangle(neuron.getLocation().x - 50, neuron.getLocation().y - 50, 100, 100), Double.toString(((double) Math.round(neuron.getValue() * 100d) / 100d)), new Font("Monaco", 1, 20));
                 }
             }
+            Drawing.Added = true;
             
             try {
                 Thread.sleep(50);
@@ -453,7 +530,23 @@ public class Run extends JFrame {
         			RenderingHints.KEY_ANTIALIASING,
             		RenderingHints.VALUE_ANTIALIAS_ON));
         		
-        		g2.drawImage(BasicNeuronImage, null, 0, 0);
+        		switch (SelectedNeuronType) {
+        		case 0:
+        			g2.drawString("Nothing Selected", 20, 30);
+        			break;
+        		case 1:
+        			g2.drawImage(BasicNeuronImage, null, 0, 0);	
+        			break;
+        		case 2:
+        			g2.drawImage(InputNeuronImage, null, 0, 0);	
+        			break;
+        		case 3:
+        			g2.drawImage(OutputNeuronImage, null, 0, 0);	
+        			break;
+        		case 4:
+        			g2.drawImage(BiasNeuronImage, null, 0, 0);	
+        			break;
+        		}
         		g2.drawRect(10, 10, NEURON_INFO_WIDTH-20, NEURON_INFO_HEIGHT-20);
         
         		repaint();
@@ -464,11 +557,6 @@ public class Run extends JFrame {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                try {
-                    InputLines = getLines("/Users/admin/Documents/Josh Files/Coding/FFNN/Input");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
                 new Run();
             }
         });

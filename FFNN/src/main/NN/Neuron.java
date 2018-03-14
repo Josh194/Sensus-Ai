@@ -9,7 +9,7 @@ public class Neuron {
     Double Error = 0.0;
     Double MinRange;
     Double MaxRange;
-    public int Type; //1: FF, 2: Bias, 3: Recursive
+    public int Type; //1: FF, 2: Input, 3: Output, 4: Bias, 5: Recursive
     Layer Layer;
     Color Color;
     Point Location;
@@ -23,6 +23,10 @@ public class Neuron {
     
     public void update() {
     		if (Type==1) {
+    			Value = ((MaxRange - MinRange) / (1 + (Math.pow(2.71828, -Value)))) + MinRange;
+    		} else if (Type==2) {
+    			Value = ((MaxRange - MinRange) / (1 + (Math.pow(2.71828, -Value)))) + MinRange;
+    		} else if (Type==3) {
     			Value = ((MaxRange - MinRange) / (1 + (Math.pow(2.71828, -Value)))) + MinRange;
     		}
     }

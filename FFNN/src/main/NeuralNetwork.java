@@ -37,11 +37,11 @@ public class NeuralNetwork {
         for (Layer layer: layers) {
             if (layers.indexOf(layer) == 0) {
                 for (int i = 0; i < NeuralNetworkComposition[layers.indexOf(layer)]; i++) {
-                    layer.addNeuron(new Neuron(0d, layer, 1, InputColor));
+                    layer.addNeuron(new Neuron(0d, layer, 2, InputColor));
                 }
             } else if (layers.indexOf(layer) == (layers.size() - 1)) {
                 for (int i = 0; i < NeuralNetworkComposition[layers.indexOf(layer)]; i++) {
-                    layer.addNeuron(new Neuron(0d, layer, 1, OutputColor));
+                    layer.addNeuron(new Neuron(0d, layer, 3, OutputColor));
                     for (Neuron neuron: layers.get(layers.indexOf(layer) - 1).neurons) {
                         connections.add(new Connection(1d, neuron, layer.neurons.get(i), new Color(0, 0, 0)));
                     }
@@ -50,7 +50,7 @@ public class NeuralNetwork {
                 for (int i = 0; i < NeuralNetworkComposition[layers.indexOf(layer)]; i++) {
                 		if (i==NeuralNetworkComposition[layers.indexOf(layer)]-1) {
                 			if(NeuralNetworkBiasComposition[layers.indexOf(layer)]==1) {
-                				layer.addNeuron(new Neuron(1d, layer, 2, BiasColor));
+                				layer.addNeuron(new Neuron(1d, layer, 4, BiasColor));
                 			} else {
                 				layer.addNeuron(new Neuron(0d, layer, 1, HiddenColor));
                 			}

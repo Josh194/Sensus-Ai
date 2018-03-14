@@ -1,10 +1,14 @@
 # Ai
 Just a little AI project I am working on
 
-Version: 2.2.0-beta
+Version: 1.0.0
+
+
 
 New:
 
-Additions to Control Panel
+Click to remove connection (Buggy)
 
-New Inspect Panel
+Custom input file
+
+Inspect neuron images (Incomplete)

@@ -9,6 +9,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -25,6 +26,7 @@ public class Drawing {
 	public static Point outputLocation;
 	public static Timer animation = new Timer();
 	public static Double animationX = -5d;
+	public static boolean Added = false;
 	
 	public static void startAnimation() {
 		animation.schedule(new updateAnimation(), 10l);
@@ -66,14 +68,16 @@ public class Drawing {
 	}
 	
     public static void drawCircle(Graphics2D g2, int x, int y, int r) {
+        if (Added) {
+        	
+        } else {
+        		Run.shapes.add(new Ellipse2D.Double(x-(r/2),y-(r/2),r,r));
+        }
+    	
         r = (int) ((r)/(1+Math.pow(2.718, -1*animationX)));
         x = x - (r / 2);
         y = y - (r / 2);
-        if (Run.shapes.contains(new Ellipse2D.Double(x,y,r,r))) {
-        	
-        } else {
-        		Run.shapes.add(new Ellipse2D.Double(x,y,r,r));
-        }
+        
         g2.fill(new Ellipse2D.Double(x,y,r,r));
     }
 
@@ -90,5 +94,10 @@ public class Drawing {
         g2.setStroke(new BasicStroke(java.lang.Math.abs(size)));
         g2.drawLine((x1+x2)/2,(y1+y2)/2,(int) (((x2-((x1+x2)/2))/(1+Math.pow(2.718, -1*animationX)))+((x1+x2)/2)),(int) (((y2-((y1+y2)/2))/(1+Math.pow(2.718, -1*animationX)))+((y1+y2)/2)));
         g2.drawLine((x1+x2)/2,(y1+y2)/2,(int) (((x1-((x2+x1)/2))/(1+Math.pow(2.718, -1*animationX)))+((x2+x1)/2)),(int) (((y1-((y2+y1)/2))/(1+Math.pow(2.718, -1*animationX)))+((y2+y1)/2)));
+        if (Added) {
+        	
+        } else {
+        		Run.shapes.add(new Line2D.Double(x1,y1,x2,y2));
+        }
     }
 }
