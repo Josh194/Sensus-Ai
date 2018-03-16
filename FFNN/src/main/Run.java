@@ -93,7 +93,7 @@ public class Run extends JFrame {
     private static int InputLine = 0;
     private static int InputLines;
     private static Double[] Input = new Double[neuralNetwork.layers.get(0).neurons.size() + 1];
-    Connection connectionToRemove = null;
+    private static Connection connectionToRemove = null;
 
     private JPanel container = new JPanel();
     private DrawCanvas canvas;
@@ -123,9 +123,9 @@ public class Run extends JFrame {
     		
     			try {
 				BasicNeuronImage = ImageIO.read(new File("src/Graphics/Simple_Neuron.png"));
-				BiasNeuronImage = ImageIO.read(new File("src/Graphics/Simple_Neuron.png"));
-				InputNeuronImage = ImageIO.read(new File("src/Graphics/Simple_Neuron.png"));
-				OutputNeuronImage = ImageIO.read(new File("src/Graphics/Simple_Neuron.png"));
+				BiasNeuronImage = ImageIO.read(new File("src/Graphics/Bias_Neuron.png"));
+				InputNeuronImage = ImageIO.read(new File("src/Graphics/Input_Neuron.png"));
+				OutputNeuronImage = ImageIO.read(new File("src/Graphics/Output_Neuron.png"));
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
@@ -192,12 +192,23 @@ public class Run extends JFrame {
                     }
                     
                     if (distanceToLine < 10) {
-                			for (Connection connection: neuralNetwork.connections) {
-                				if (connection.N1.getLocation().equals((closestLine.getP1())) && connection.N2.getLocation().equals((closestLine.getP2()))) {
-                					connectionToRemove = connection;
-                				}
-                			}
+                    		if(!FoundType) {
+                    			for (Connection connection: neuralNetwork.connections) {
+                    				if(connection.N1.getLocation().equals((closestLine.getP1()))) {
+                    					if(connection.N2.getLocation().equals((closestLine.getP2()))) {
+                        					connectionToRemove = connection;
+                    					}
+                    				}
+                    			}
+                    		}
                     }
+                }
+                System.out.println(FoundType);
+                if(distanceToLine < 10) {
+                		if(!FoundType) {
+                    		Run.neuralNetwork.connections.remove(connectionToRemove);
+            				shapes.remove(closestLine);
+                		}
                 }
                 
                 if(FoundType) {
@@ -206,11 +217,6 @@ public class Run extends JFrame {
                 		SelectedNeuronType=0;
                 }
                 
-                if(distanceToLine < 10) {
-        				shapes.remove(closestLine);
-                }
-
-                Run.neuralNetwork.connections.remove(connectionToRemove);
                 distanceToLine = 10000d;
             }
         });
@@ -269,6 +275,7 @@ public class Run extends JFrame {
             public void actionPerformed(ActionEvent e) {
             		shapes.clear();
             		Drawing.Added=false;
+            		Drawing.startAnimation();
             		InputString = InputLocation.getText();
             		try {
 						InputLines = getLines(InputString);

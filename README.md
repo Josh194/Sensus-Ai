@@ -1,14 +1,10 @@
 # Ai
 Just a little AI project I am working on
 
-Version: 1.0.0
+Version: 1.1.0 Pre-Release
 
 
 
 New:
 
-Click to remove connection (Buggy)
-
-Custom input file
-
-Inspect neuron images (Incomplete)
+Inspect Images Complete
