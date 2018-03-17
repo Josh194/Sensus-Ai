@@ -33,6 +33,10 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Timer;
+import java.util.stream.Collectors;
+import java.util.stream.DoubleStream;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
@@ -110,6 +114,7 @@ public class Run extends JFrame {
     private JTextField CustomNeurons = new JTextField();
     private JTextField CustomBias = new JTextField();
     private JTextField InputLocation = new JTextField();
+    private JTextField TestInput = new JTextField();
     private JButton Pause = new JButton("Pause");
     private JButton SetNN = new JButton("Apply");
     private JButton outputPanelButton = new JButton("Output Graph");
@@ -160,6 +165,17 @@ public class Run extends JFrame {
             }
         };
         
+        Action TestInputAction = new AbstractAction()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+            		List<Double> Input = DoubleStream.of(Arrays.stream(TestInput.getText().substring(1, TestInput.getText().length()-1).split(",")).map(String::trim).mapToDouble(Double::parseDouble).toArray()).boxed().collect(Collectors.toList());
+                neuralNetwork.setInput(new ArrayList<Double>(Input));
+                neuralNetwork.feedForward();
+            }
+        };
+        
         canvas.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent me) {
@@ -170,8 +186,8 @@ public class Run extends JFrame {
                 
                 for (Shape s : shapes) {
                 		if (s instanceof Line2D) {
-                			if(getDistanceToLine(((Line2D) s).getP1(), ((Line2D) s).getP2(), me.getPoint()) < distanceToLine) {
-                				distanceToLine = getDistanceToLine(((Line2D) s).getP1(), ((Line2D) s).getP2(), me.getPoint());
+                			if(shortestDistance(((Line2D) s).getP1(), ((Line2D) s).getP2(), me.getPoint()) < distanceToLine) {
+                				distanceToLine = shortestDistance(((Line2D) s).getP1(), ((Line2D) s).getP2(), me.getPoint());
                 				closestLine = ((Line2D) s);
                 			}
                 		}
@@ -191,7 +207,7 @@ public class Run extends JFrame {
                         }
                     }
                     
-                    if (distanceToLine < 10) {
+                    if (distanceToLine < 5) {
                     		if(!FoundType) {
                     			for (Connection connection: neuralNetwork.connections) {
                     				if(connection.N1.getLocation().equals((closestLine.getP1()))) {
@@ -203,8 +219,8 @@ public class Run extends JFrame {
                     		}
                     }
                 }
-                System.out.println(FoundType);
-                if(distanceToLine < 10) {
+                
+                if(distanceToLine < 5) {
                 		if(!FoundType) {
                     		Run.neuralNetwork.connections.remove(connectionToRemove);
             				shapes.remove(closestLine);
@@ -275,6 +291,8 @@ public class Run extends JFrame {
             public void actionPerformed(ActionEvent e) {
             		shapes.clear();
             		Drawing.Added=false;
+            		Drawing.animationX = 0d;
+            		Drawing.animation = new Timer();
             		Drawing.startAnimation();
             		InputString = InputLocation.getText();
             		try {
@@ -289,11 +307,13 @@ public class Run extends JFrame {
         });
         
         LearningRate.addActionListener(LearningRateChange);
+        TestInput.addActionListener(TestInputAction);
         
         CustomBias.setBounds(20, 140, 100, 20);
         CustomNeurons.setBounds(20, 100, 100, 20);
         LearningRate.setBounds(20, 40, 100, 20);
         Pause.setBounds(360, 530, 100, 20);
+        TestInput.setBounds(20, 260, 100, 20);
         customizationPanelButton.setBounds(CONTROL_WIDTH-140, 20, 120, 25);
         outputPanelButton.setBounds(CONTROL_WIDTH-140, 20, 120, 25);
         neuronPanelButton.setBounds(CONTROL_WIDTH-140, 55, 120, 25);
@@ -310,20 +330,27 @@ public class Run extends JFrame {
         customizationPanel.add(CustomBias);
         customizationPanel.add(SetNN);
         customizationPanel.add(InputLocation);
+        customizationPanel.add(TestInput);
         
         JLabel LearningRateLabel = new JLabel("Learning Rate:");
         LearningRateLabel.setBounds(20, 20, 100, 20);	
-        JLabel CustomNeuronsLabel = new JLabel("Neuron Layout: (Ex: [2,5,5,1])");
-        CustomNeuronsLabel.setBounds(20, 80, 250, 20);	
-        JLabel CustomBiasLabel = new JLabel("Bias Layout: (Ex: [1,1,0,0])");
-        CustomBiasLabel.setBounds(20, 120, 250, 20);
+        JLabel CustomNeuronsLabel = new JLabel("Neuron Layout:");
+        CustomNeuronsLabel.setBounds(20, 80, 100, 20);	
+        JLabel CustomBiasLabel = new JLabel("Bias Layout:");
+        CustomBiasLabel.setBounds(20, 120, 100, 20);
         JLabel InputLabel = new JLabel("Input Location:");
-        InputLabel.setBounds(20, 160, 100, 20);	
+        InputLabel.setBounds(20, 160, 100, 20);
+        JLabel TestInputLabel = new JLabel("Test Input:");
+        TestInputLabel.setBounds(20, 240, 100, 20);
+        JLabel InfoLabel = new JLabel("<html><body style='text-align: center'>For information on how to use this software visit:<br>github.com/Josh194/Ai/wiki</html>");
+        InfoLabel.setBounds(115, 480, 250, 100);
         
         customizationPanel.add(LearningRateLabel);
         customizationPanel.add(CustomNeuronsLabel);
         customizationPanel.add(CustomBiasLabel);
         customizationPanel.add(InputLabel);
+        customizationPanel.add(TestInputLabel);
+        customizationPanel.add(InfoLabel);
         customizationPanel.add(outputPanelButton);
         customizationPanel.add(neuronPanelButton);
         
@@ -362,9 +389,26 @@ public class Run extends JFrame {
         setTitle("Feed Forward Neural Network 1.0.0");
     }
     
-    public double getDistanceToLine(Point2D A, Point2D B, Point P) {
-        double normalLength = Math.sqrt((B.getX()-A.getX())*(B.getX()-A.getX())+(B.getY()-A.getY())*(B.getY()-A.getY()));
-        return Math.abs((P.x-A.getX())*(B.getY()-A.getY())-(P.y-A.getY())*(B.getX()-A.getX()))/normalLength;
+    private double shortestDistance(Point2D a, Point2D b, Point2D p)
+    {
+        double px=b.getX()-a.getX();
+        double py=b.getY()-a.getY();
+        double temp=(px*px)+(py*py);
+        double u=((p.getX()-a.getX())*px+(p.getY()-a.getY())*py)/(temp);
+        if(u>1){
+            u=1;
+        }
+        else if(u<0){
+            u=0;
+        }
+        double x = a.getX()+u*px;
+        double y = a.getY()+u*py;
+
+        double dx = x-p.getX();
+        double dy = y-p.getY();
+        double dist = Math.sqrt(dx*dx + dy*dy);
+        return dist;
+
     }
 
 
@@ -409,9 +453,11 @@ public class Run extends JFrame {
 
             
             if (Paused == false) {
+            		if (InputString!=null) {
                 neuralNetwork.setInput(new ArrayList <Double> (Arrays.asList(Input)));
                 neuralNetwork.feedForward();
                 neuralNetwork.feedBackward();
+            		}
             }
             
             Graphics2D g2 = (Graphics2D) g;
@@ -448,6 +494,7 @@ public class Run extends JFrame {
                     Drawing.drawText(g2, new Rectangle(neuron.getLocation().x - 50, neuron.getLocation().y - 50, 100, 100), Double.toString(((double) Math.round(neuron.getValue() * 100d) / 100d)), new Font("Monaco", 1, 20));
                 }
             }
+            
             Drawing.Added = true;
             
             try {

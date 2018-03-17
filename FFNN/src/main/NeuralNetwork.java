@@ -78,7 +78,7 @@ public class NeuralNetwork {
         return (((MaxRange - MinRange) * Math.pow(2.71828, input)) / Math.pow((Math.pow(2.71828, input) + 1), 2));
     }
     
-    public void setInput(ArrayList < Double > input) {
+    public void setInput(ArrayList <Double> input) {
         Input = input;
         TargetOutput = Input.get(Input.size() - 1);
         for (Neuron neuron: layers.get(0).neurons) {
