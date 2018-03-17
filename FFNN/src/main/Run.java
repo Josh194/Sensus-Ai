@@ -203,10 +203,8 @@ public class Run extends JFrame {
                     
                     if (distanceToLine < 5 && !FoundType) {
                     		for (Connection connection: neuralNetwork.connections) {
-                    			if(connection.N1.getLocation().equals((closestLine.getP1()))) {
-                    				if(connection.N2.getLocation().equals((closestLine.getP2()))) {
+                    			if(connection.N1.getLocation().equals((closestLine.getP1())) && connection.N2.getLocation().equals((closestLine.getP2()))) {
                         				connectionToRemove = connection;
-                    				}
                     			}
                     		}
                     }
