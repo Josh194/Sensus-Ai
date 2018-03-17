@@ -386,7 +386,7 @@ public class Run extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         pack();
         setVisible(true);
-        setTitle("Feed Forward Neural Network 1.0.0");
+        setTitle("Sensus Ai 1.0.0");
     }
     
     private double shortestDistance(Point2D a, Point2D b, Point2D p)
