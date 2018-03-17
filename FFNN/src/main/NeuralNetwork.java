@@ -1,6 +1,7 @@
 package main;
 
 import java.awt.Color;
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -25,6 +26,8 @@ public class NeuralNetwork {
     Double Output;
     Double MinRange = -2.0;
     Double MaxRange = 2.0;
+    private static int NX;
+    private static int NY;
     
     public NeuralNetwork(int[] NeuralNetworkComposition, int[] NeuralNetworkBiasComposition, Double teachingRate) {
         connections.clear();
@@ -64,6 +67,12 @@ public class NeuralNetwork {
                     }
                 }
             }
+            
+            for (Neuron neuron: layer.neurons) {
+        			NX = Run.CANVAS_WIDTH / (layers.size() + 1) * (layers.indexOf(layer) + 1);
+        			NY = Run.CANVAS_HEIGHT / (layer.neurons.size() + 1) * (layer.neurons.indexOf(neuron) + 1);
+        			neuron.setLocation(new Point(NX, NY));
+            }
         }
         
         for (Layer layer: layers) {
@@ -88,7 +97,7 @@ public class NeuralNetwork {
 
     public void feedForward() {
         for (Connection connection: connections) {
-            connection.N2.setValue((connection.N2.getValue() + connection.N1.getValue() * connection.getValue()));
+            connection.N2.setValue((connection.N2.getValue()+connection.N1.getValue()*connection.getValue()));
         }
 
         for (Layer layer: layers) {
@@ -111,7 +120,6 @@ public class NeuralNetwork {
         }
         Drawing.graphPoints.add(Error);
         Drawing.outputPoints.add(Output);
-        System.out.println(Error);
     }
 
     public void feedBackward() {

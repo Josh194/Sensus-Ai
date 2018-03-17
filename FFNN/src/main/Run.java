@@ -76,7 +76,7 @@ public class Run extends JFrame {
     public static boolean FoundType = false;
     
     public Boolean Paused = true;
-    public String InputString = null;
+    public String InputString = "";
     public static NeuralNetwork neuralNetwork = new NeuralNetwork(new int[] {
         2,
         4,
@@ -92,8 +92,6 @@ public class Run extends JFrame {
         0,
         0,
     }, 0.01);
-    private static int NX;
-    private static int NY;
     private static int InputLine = 0;
     private static int InputLines;
     private static Double[] Input = new Double[neuralNetwork.layers.get(0).neurons.size() + 1];
@@ -185,46 +183,38 @@ public class Run extends JFrame {
                 Line2D closestLine = null;
                 
                 for (Shape s : shapes) {
-                		if (s instanceof Line2D) {
-                			if(shortestDistance(((Line2D) s).getP1(), ((Line2D) s).getP2(), me.getPoint()) < distanceToLine) {
+                		if (s instanceof Line2D && shortestDistance(((Line2D) s).getP1(), ((Line2D) s).getP2(), me.getPoint()) < distanceToLine) {
                 				distanceToLine = shortestDistance(((Line2D) s).getP1(), ((Line2D) s).getP2(), me.getPoint());
                 				closestLine = ((Line2D) s);
-                			}
                 		}
                 }
                 
                 for (Shape s : shapes) {
-                    if (s.contains(me.getPoint())) {
-                        if (s instanceof Ellipse2D) {
-                        		for (Layer layer: neuralNetwork.layers) {
-                        			for (Neuron neuron: layer.neurons) {
-                                    	if (neuron.getLocation().equals(new Point(s.getBounds().getLocation().x+(100/2),s.getBounds().getLocation().y+(100/2)))) {
-                                    		SelectedNeuronType=neuron.Type;
-                                    		FoundType=true;
-                                   	}
+                    if (s instanceof Ellipse2D && s.contains(me.getPoint())) {
+                        	for (Layer layer: neuralNetwork.layers) {
+                        		for (Neuron neuron: layer.neurons) {
+                        			if (neuron.getLocation().equals(new Point(s.getBounds().getLocation().x+(100/2),s.getBounds().getLocation().y+(100/2)))) {
+                        				SelectedNeuronType=neuron.Type;
+                        				FoundType=true;
                         			}
                         		}
-                        }
+                        	}
                     }
                     
-                    if (distanceToLine < 5) {
-                    		if(!FoundType) {
-                    			for (Connection connection: neuralNetwork.connections) {
-                    				if(connection.N1.getLocation().equals((closestLine.getP1()))) {
-                    					if(connection.N2.getLocation().equals((closestLine.getP2()))) {
-                        					connectionToRemove = connection;
-                    					}
+                    if (distanceToLine < 5 && !FoundType) {
+                    		for (Connection connection: neuralNetwork.connections) {
+                    			if(connection.N1.getLocation().equals((closestLine.getP1()))) {
+                    				if(connection.N2.getLocation().equals((closestLine.getP2()))) {
+                        				connectionToRemove = connection;
                     				}
                     			}
                     		}
                     }
                 }
                 
-                if(distanceToLine < 5) {
-                		if(!FoundType) {
-                    		Run.neuralNetwork.connections.remove(connectionToRemove);
-            				shapes.remove(closestLine);
-                		}
+                if(distanceToLine < 5 && !FoundType) {
+                    	Run.neuralNetwork.connections.remove(connectionToRemove);
+            			shapes.remove(closestLine);
                 }
                 
                 if(FoundType) {
@@ -295,11 +285,6 @@ public class Run extends JFrame {
             		Drawing.animation = new Timer();
             		Drawing.startAnimation();
             		InputString = InputLocation.getText();
-            		try {
-						InputLines = getLines(InputString);
-					} catch (IOException e1) {
-						e1.printStackTrace();
-					}
             		NeuronComposition = Arrays.stream(CustomNeurons.getText().substring(1, CustomNeurons.getText().length()-1).split(",")).map(String::trim).mapToInt(Integer::parseInt).toArray();
             		BiasComposition = Arrays.stream(CustomBias.getText().substring(1, CustomBias.getText().length()-1).split(",")).map(String::trim).mapToInt(Integer::parseInt).toArray();
             		neuralNetwork = new NeuralNetwork(NeuronComposition, BiasComposition, Double.parseDouble(LearningRate.getText()));
@@ -417,7 +402,6 @@ public class Run extends JFrame {
             FileReader input = new FileReader(File); LineNumberReader count = new LineNumberReader(input);
         ) {
             while (count.skip(Long.MAX_VALUE) > 0) {
-                // Loop just in case the file is > Long.MAX_VALUE or skip() decides to not read the entire file
             }
 
             return (count.getLineNumber());
@@ -446,18 +430,17 @@ public class Run extends JFrame {
         public void paintComponent(Graphics g) {
             super.paintComponent(g);
             setBackground(new Color(0, 66, 103));
-
-            if(InputString!=null) {
-            		loadInput(InputString);
-            }
-
             
-            if (Paused == false) {
-            		if (InputString!=null) {
-                neuralNetwork.setInput(new ArrayList <Double> (Arrays.asList(Input)));
-                neuralNetwork.feedForward();
-                neuralNetwork.feedBackward();
-            		}
+            if (Paused == false && !InputString.equals("")) {
+        			try {
+        				InputLines = getLines(InputString);
+        			} catch (IOException e1) {
+        				e1.printStackTrace();
+        			}
+        			loadInput(InputString);
+        			neuralNetwork.setInput(new ArrayList <Double> (Arrays.asList(Input)));
+        			neuralNetwork.feedForward();
+        			neuralNetwork.feedBackward();
             }
             
             Graphics2D g2 = (Graphics2D) g;
@@ -466,32 +449,24 @@ public class Run extends JFrame {
                 RenderingHints.VALUE_ANTIALIAS_ON));
             
             g2.setColor(Color.BLACK);
-            g2.drawRect(10, 10, CANVAS_WIDTH-20, CANVAS_HEIGHT-20);
+            g2.drawRect(10, 10, CANVAS_WIDTH-20, CANVAS_HEIGHT-20); 
             
-            for (Layer layer: neuralNetwork.layers) {
-                for (Neuron neuron: layer.neurons) {
-                    NX = CANVAS_WIDTH / (neuralNetwork.layers.size() + 1) * (neuralNetwork.layers.indexOf(layer) + 1);
-                    NY = CANVAS_HEIGHT / (layer.neurons.size() + 1) * (layer.neurons.indexOf(neuron) + 1);
-                    	neuron.setLocation(new Point(NX, NY));
-                }
-            }
-
             for (Connection connection: neuralNetwork.connections) {
-                Drawing.drawLine(g2,
-                    (int) connection.N1.getLocation().getX(),
-                    (int) connection.N1.getLocation().getY(),
-                    (int) connection.N2.getLocation().getX(),
-                    (int) connection.N2.getLocation().getY(),
-                    (int) (connection.getValue() * 5),
-                    connection.getColor());
-            }
+    			Drawing.drawLine(g2,
+    					(int) connection.N1.getLocation().getX(),
+    					(int) connection.N1.getLocation().getY(),
+    					(int) connection.N2.getLocation().getX(),
+    					(int) connection.N2.getLocation().getY(),
+    					(int) (connection.getValue() * 5),
+    					connection.getColor());
+        		}
             
             for (Layer layer: neuralNetwork.layers) {
                 for (Neuron neuron: layer.neurons) {
-                    g2.setColor(neuron.getColor());
-                    Drawing.drawCircle(g2, neuron.getLocation().x, neuron.getLocation().y, 100);
-                    g2.setColor(new Color(0, 0, 0));
-                    Drawing.drawText(g2, new Rectangle(neuron.getLocation().x - 50, neuron.getLocation().y - 50, 100, 100), Double.toString(((double) Math.round(neuron.getValue() * 100d) / 100d)), new Font("Monaco", 1, 20));
+                    	g2.setColor(neuron.getColor());
+                    	Drawing.drawCircle(g2, neuron.getLocation().x, neuron.getLocation().y, 100);
+                    	g2.setColor(new Color(0, 0, 0));
+                    	Drawing.drawText(g2, new Rectangle(neuron.getLocation().x - 50, neuron.getLocation().y - 50, 100, 100), Double.toString(((double) Math.round(neuron.getValue() * 100d) / 100d)), new Font("Monaco", 1, 20));
                 }
             }
             
