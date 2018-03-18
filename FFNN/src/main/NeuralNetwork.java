@@ -12,7 +12,8 @@ import main.NN.Neuron;
 
 public class NeuralNetwork {
 
-	public ArrayList<Double> Input = new ArrayList<Double>();
+	public ArrayList<Double> Input = new ArrayList<Double>();	
+	public ArrayList<Double> TargetOutput = new ArrayList<Double>();
 	public ArrayList<Layer> layers = new ArrayList<Layer>();
 	public ArrayList<Connection> connections = new ArrayList<Connection>();
 	public Double TeachingRate;
@@ -21,7 +22,6 @@ public class NeuralNetwork {
 	Color OutputColor = new Color(255, 98, 36);
 	Color BiasColor = new Color(255, 153, 248);
 	Color color = new Color(0, 0, 0);
-	Double TargetOutput;
 	Double Error;
 	Double Output;
 	Double MinRange = -2.0;
@@ -89,7 +89,7 @@ public class NeuralNetwork {
 
 	public void setInput(ArrayList<Double> input) {
 		Input = input;
-		TargetOutput = Input.get(Input.size() - 1);
+		TargetOutput = new ArrayList<Double>(input.subList(Math.max(input.size()-layers.get(layers.size()-1).neurons.size(), 0), input.size()));
 		for (Neuron neuron : layers.get(0).neurons) {
 			neuron.setValue(input.get(layers.get(0).neurons.indexOf(neuron)));
 		}
@@ -110,15 +110,19 @@ public class NeuralNetwork {
 			}
 		}
 
-		for (Neuron neuron : layers.get(layers.size() - 1).neurons) {
-			Error = TargetOutput - neuron.getValue();
+		for (Neuron neuron : layers.get(layers.size() - 1).neurons) {	
+			Error = TargetOutput.get(layers.get(layers.size() - 1).neurons.indexOf(neuron)) - neuron.getValue();
 			neuron.setError(Error);
 			Output = neuron.getValue();
 			if (Drawing.outputPoints.size() == 30) {
 				Drawing.outputPoints.remove(0);
 			}
 		}
-		Drawing.graphPoints.add(Error);
+		Double sum = 0d;
+		for (Neuron neuron : layers.get(layers.size() - 1).neurons) {
+			sum = sum + Math.pow((neuron.getValue() - TargetOutput.get(layers.get(layers.size() - 1).neurons.indexOf(neuron))), 2);
+		}
+		Drawing.graphPoints.add(sum/layers.get(layers.size() - 1).neurons.size());
 		Drawing.outputPoints.add(Output);
 	}
 
