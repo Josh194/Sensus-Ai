@@ -25,7 +25,7 @@ public class Drawing {
 	public static Dimension outputSize;
 	public static Point outputLocation;
 	public static Timer animation = new Timer();
-	public static Double animationX = -5d;
+	public static Double animationX = -8d;
 	public static boolean Added = false;
 
 	public static void startAnimation() {
