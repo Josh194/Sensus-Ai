@@ -12,7 +12,7 @@ import main.NN.Neuron;
 
 public class NeuralNetwork {
 
-	public ArrayList<Double> Input = new ArrayList<Double>();	
+	public ArrayList<Double> Input = new ArrayList<Double>();
 	public ArrayList<Double> TargetOutput = new ArrayList<Double>();
 	public ArrayList<Layer> layers = new ArrayList<Layer>();
 	public ArrayList<Connection> connections = new ArrayList<Connection>();
@@ -89,7 +89,8 @@ public class NeuralNetwork {
 
 	public void setInput(ArrayList<Double> input) {
 		Input = input;
-		TargetOutput = new ArrayList<Double>(input.subList(Math.max(input.size()-layers.get(layers.size()-1).neurons.size(), 0), input.size()));
+		TargetOutput = new ArrayList<Double>(
+				input.subList(Math.max(input.size() - layers.get(layers.size() - 1).neurons.size(), 0), input.size()));
 		for (Neuron neuron : layers.get(0).neurons) {
 			neuron.setValue(input.get(layers.get(0).neurons.indexOf(neuron)));
 		}
@@ -110,7 +111,7 @@ public class NeuralNetwork {
 			}
 		}
 
-		for (Neuron neuron : layers.get(layers.size() - 1).neurons) {	
+		for (Neuron neuron : layers.get(layers.size() - 1).neurons) {
 			Error = TargetOutput.get(layers.get(layers.size() - 1).neurons.indexOf(neuron)) - neuron.getValue();
 			neuron.setError(Error);
 			Output = neuron.getValue();
@@ -120,9 +121,10 @@ public class NeuralNetwork {
 		}
 		Double sum = 0d;
 		for (Neuron neuron : layers.get(layers.size() - 1).neurons) {
-			sum = sum + Math.pow((neuron.getValue() - TargetOutput.get(layers.get(layers.size() - 1).neurons.indexOf(neuron))), 2);
+			sum = sum + Math.pow(
+					(neuron.getValue() - TargetOutput.get(layers.get(layers.size() - 1).neurons.indexOf(neuron))), 2);
 		}
-		Drawing.graphPoints.add(sum/layers.get(layers.size() - 1).neurons.size());
+		Drawing.graphPoints.add(sum / layers.get(layers.size() - 1).neurons.size());
 		Drawing.outputPoints.add(Output);
 	}
 

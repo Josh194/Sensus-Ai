@@ -7,4 +7,8 @@ New:
 
 Exit Button
 
+Input File Chooser
+
 Support For Multiple Neurons
+
+Save/Load Neural Network
