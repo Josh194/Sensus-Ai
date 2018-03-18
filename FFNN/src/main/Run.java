@@ -39,6 +39,7 @@ import java.util.stream.DoubleStream;
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -106,6 +107,7 @@ public class Run extends JFrame {
 	private JButton outputPanelButton2 = new JButton("Output Graph");
 	private JButton neuronPanelButton2 = new JButton("Inspect");
 	private JButton customizationPanelButton2 = new JButton("Customize");
+	private JButton Exit = new JButton();
 
 	public Run() {
 
@@ -212,6 +214,19 @@ public class Run extends JFrame {
 			}
 		});
 
+		try {
+			Exit.setIcon(new ImageIcon(ImageIO.read(new File("src/images/exit.png"))));
+		} catch (Exception ex) {
+			System.out.println(ex);
+		}
+
+		Exit.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				System.exit(0);
+			}
+		});
+
 		Pause.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -297,6 +312,11 @@ public class Run extends JFrame {
 		neuronPanelButton2.setBounds(CONTROL_WIDTH - 140, 55, 120, 25);
 		SetNN.setBounds(20, 530, 100, 20);
 		InputLocation.setBounds(20, 180, 100, 20);
+		Exit.setBounds(20, 20, 43, 43);
+
+		Exit.setOpaque(false);
+		Exit.setContentAreaFilled(false);
+		Exit.setBorderPainted(false);
 
 		customizationPanel.setLayout(null);
 		customizationPanel.add(Pause);
@@ -338,6 +358,9 @@ public class Run extends JFrame {
 		viewNeuron.add(customizationPanelButton2);
 		viewNeuron.add(outputPanelButton2);
 
+		canvas.setLayout(null);
+		canvas.add(Exit);
+
 		controlPanel.add(customizationPanel, "customizationPanel");
 		controlPanel.add(outputPanel, "outputPanel");
 		controlPanel.add(viewNeuron, "viewNeuron");
@@ -352,7 +375,7 @@ public class Run extends JFrame {
 		Container cp = getContentPane();
 		cp.add(container);
 
-		setTitle("Sensus Ai 1.0.0");
+		setTitle("Sensus Ai 1.0.2");
 		setSize(CANVAS_WIDTH + 480, CANVAS_HEIGHT);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setUndecorated(true);
