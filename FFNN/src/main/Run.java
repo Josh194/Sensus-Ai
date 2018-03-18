@@ -7,7 +7,6 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -16,7 +15,6 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -56,11 +54,11 @@ import main.NN.Neuron;
 @SuppressWarnings("serial")
 public class Run extends JFrame {
 	public static ArrayList<Shape> shapes = new ArrayList<Shape>();
-	public static Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-	public static final int CANVAS_WIDTH = 1200;
-	public static final int CANVAS_HEIGHT = 1050;
+	public static Rectangle screenSize = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
+	public static final int CANVAS_WIDTH = screenSize.width-480;
+	public static final int CANVAS_HEIGHT = screenSize.height;
 	public static final int GRAPH_WIDTH = 440;
-	public static final int GRAPH_HEIGHT = 440;
+	public static final int GRAPH_HEIGHT = screenSize.height-610;
 	public static final int CONTROL_WIDTH = 480;
 	public static final int CONTROL_HEIGHT = 570;
 	public static final int OUTPUT_WIDTH = 440;
@@ -110,7 +108,7 @@ public class Run extends JFrame {
 	private JButton customizationPanelButton2 = new JButton("Customize");
 
 	public Run() {
-
+		
 		try {
 			BasicNeuronImage = ImageIO.read(new File("src/Graphics/Simple_Neuron.png"));
 			BiasNeuronImage = ImageIO.read(new File("src/Graphics/Bias_Neuron.png"));
@@ -353,21 +351,13 @@ public class Run extends JFrame {
 
 		Container cp = getContentPane();
 		cp.add(container);
-
-		GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-
-		if (gd.isFullScreenSupported()) {
-			setUndecorated(true);
-			gd.setFullScreenWindow(this);
-		} else {
-			System.err.println("Full screen not supported");
-			setSize(100, 100);
-			setVisible(true);
-		}
-		setDefaultCloseOperation(EXIT_ON_CLOSE);
-		pack();
-		setVisible(true);
+		
 		setTitle("Sensus Ai 1.0.0");
+		setSize(CANVAS_WIDTH+480, CANVAS_HEIGHT);
+		setDefaultCloseOperation(EXIT_ON_CLOSE);
+		setUndecorated(true);
+		setResizable(false);
+		setVisible(true);
 	}
 
 	private double shortestDistance(Point2D a, Point2D b, Point2D p) {
