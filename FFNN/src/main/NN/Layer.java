@@ -4,14 +4,14 @@ import java.util.ArrayList;
 
 public class Layer {
 
-    public ArrayList < Neuron > neurons = new ArrayList < Neuron > ();
+	public ArrayList<Neuron> neurons = new ArrayList<Neuron>();
 
-    public Layer() {
+	public Layer() {
 
-    }
+	}
 
-    public void addNeuron(Neuron neuron) {
-        neurons.add(neuron);
-    }
+	public void addNeuron(Neuron neuron) {
+		neurons.add(neuron);
+	}
 
 }
