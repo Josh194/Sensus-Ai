@@ -310,9 +310,9 @@ public class Run extends JFrame {
 		});
 
 		InputLocation.addActionListener(new ActionListener() {
-			
+
 			JFileChooser fileChooser = new JFileChooser();
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				int returnVal = fileChooser.showOpenDialog(fileChooser);
@@ -326,9 +326,9 @@ public class Run extends JFrame {
 		});
 
 		SaveNN.addActionListener(new ActionListener() {
-			
+
 			JFileChooser fileChooser = new JFileChooser();
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				int returnVal = fileChooser.showOpenDialog(fileChooser);
@@ -370,9 +370,9 @@ public class Run extends JFrame {
 		});
 
 		LoadNN.addActionListener(new ActionListener() {
-			
+
 			JFileChooser fileChooser = new JFileChooser();
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				int returnVal = fileChooser.showOpenDialog(fileChooser);
