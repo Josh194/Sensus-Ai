@@ -120,8 +120,6 @@ public class Run extends JFrame {
 	private JButton customizationPanelButton2 = new JButton("Customize");
 	private JButton Exit = new JButton();
 
-	private JFileChooser fileChooser = new JFileChooser();
-
 	public Run() throws TransformerException, ParserConfigurationException {
 		try {
 			BasicNeuronImage = ImageIO.read(new File("src/Graphics/Simple_Neuron.png"));
@@ -291,24 +289,30 @@ public class Run extends JFrame {
 		SetNN.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				shapes.clear();
-				Drawing.Added = false;
-				Drawing.animationX = -5d;
-				Drawing.animation = new Timer();
-				Drawing.startAnimation();
+				if (!CustomNeurons.getText().equals("") && !CustomBias.getText().equals("")
+						&& !LearningRate.getText().equals("")) {
+					shapes.clear();
+					Drawing.Added = false;
+					Drawing.animationX = -5d;
+					Drawing.animation = new Timer();
+					Drawing.startAnimation();
 
-				NeuronComposition = Arrays
-						.stream(CustomNeurons.getText().substring(1, CustomNeurons.getText().length() - 1).split(","))
-						.map(String::trim).mapToInt(Integer::parseInt).toArray();
-				BiasComposition = Arrays
-						.stream(CustomBias.getText().substring(1, CustomBias.getText().length() - 1).split(","))
-						.map(String::trim).mapToInt(Integer::parseInt).toArray();
-				neuralNetwork = new NeuralNetwork(NeuronComposition, BiasComposition,
-						Double.parseDouble(LearningRate.getText()));
+					NeuronComposition = Arrays.stream(
+							CustomNeurons.getText().substring(1, CustomNeurons.getText().length() - 1).split(","))
+							.map(String::trim).mapToInt(Integer::parseInt).toArray();
+					BiasComposition = Arrays
+							.stream(CustomBias.getText().substring(1, CustomBias.getText().length() - 1).split(","))
+							.map(String::trim).mapToInt(Integer::parseInt).toArray();
+					neuralNetwork = new NeuralNetwork(NeuronComposition, BiasComposition,
+							Double.parseDouble(LearningRate.getText()));
+				}
 			}
 		});
 
 		InputLocation.addActionListener(new ActionListener() {
+			
+			JFileChooser fileChooser = new JFileChooser();
+			
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				int returnVal = fileChooser.showOpenDialog(fileChooser);
@@ -322,6 +326,9 @@ public class Run extends JFrame {
 		});
 
 		SaveNN.addActionListener(new ActionListener() {
+			
+			JFileChooser fileChooser = new JFileChooser();
+			
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				int returnVal = fileChooser.showOpenDialog(fileChooser);
@@ -363,62 +370,75 @@ public class Run extends JFrame {
 		});
 
 		LoadNN.addActionListener(new ActionListener() {
+			
+			JFileChooser fileChooser = new JFileChooser();
+			
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				int returnVal = fileChooser.showOpenDialog(fileChooser);
+
+				String extension = "";
+
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
 					File file = fileChooser.getSelectedFile();
-					InputString = file.getAbsolutePath();
-					Document InputFile = null;
-					try {
-						InputFile = XMLsave.asXML(file);
-					} catch (SAXException | IOException | ParserConfigurationException e2) {
-						e2.printStackTrace();
-					}
-					InputFile.getDocumentElement().normalize();
-					NodeList nList = null;
-					try {
-						nList = XMLsave.asXML(file).getElementsByTagName("Neurons");
-					} catch (SAXException | IOException | ParserConfigurationException e1) {
-						e1.printStackTrace();
-					}
-					Node node = nList.item(0);
-					Element eElement = (Element) node;
 
-					int[] Neurons = new int[eElement.getElementsByTagName("NumNeurons").getLength()];
-					for (int i = 0; i < Neurons.length; i++) {
-						Neurons[i] = Integer
-								.parseInt(eElement.getElementsByTagName("NumNeurons").item(i).getTextContent());
+					int l = file.getAbsolutePath().lastIndexOf('.');
+					if (l >= 0) {
+						extension = file.getAbsolutePath().substring(l + 1);
 					}
 
-					try {
-						nList = XMLsave.asXML(file).getElementsByTagName("Bias");
-					} catch (SAXException | IOException | ParserConfigurationException e1) {
-						e1.printStackTrace();
+					if (extension.equals("xml")) {
+						Document InputFile = null;
+						try {
+							InputFile = XMLsave.asXML(file);
+						} catch (SAXException | IOException | ParserConfigurationException e2) {
+							e2.printStackTrace();
+						}
+						InputFile.getDocumentElement().normalize();
+						NodeList nList = null;
+						try {
+							nList = XMLsave.asXML(file).getElementsByTagName("Neurons");
+						} catch (SAXException | IOException | ParserConfigurationException e1) {
+							e1.printStackTrace();
+						}
+						Node node = nList.item(0);
+						Element eElement = (Element) node;
+
+						int[] Neurons = new int[eElement.getElementsByTagName("NumNeurons").getLength()];
+						for (int i = 0; i < Neurons.length; i++) {
+							Neurons[i] = Integer
+									.parseInt(eElement.getElementsByTagName("NumNeurons").item(i).getTextContent());
+						}
+
+						try {
+							nList = XMLsave.asXML(file).getElementsByTagName("Bias");
+						} catch (SAXException | IOException | ParserConfigurationException e1) {
+							e1.printStackTrace();
+						}
+						node = nList.item(0);
+						eElement = (Element) node;
+
+						int[] Bias = new int[eElement.getElementsByTagName("HasBias").getLength()];
+						for (int i = 0; i < Bias.length; i++) {
+							Bias[i] = Integer
+									.parseInt(eElement.getElementsByTagName("HasBias").item(i).getTextContent());
+						}
+
+						neuralNetwork = new NeuralNetwork(Neurons, Bias, 0.01);
+
+						try {
+							nList = XMLsave.asXML(file).getElementsByTagName("ConnectionValues");
+						} catch (SAXException | IOException | ParserConfigurationException e1) {
+							e1.printStackTrace();
+						}
+						node = nList.item(0);
+						eElement = (Element) node;
+
+						for (Connection connection : neuralNetwork.connections) {
+							connection.setValue(Double.parseDouble(eElement.getElementsByTagName("ConnectionValue")
+									.item(neuralNetwork.connections.indexOf(connection)).getTextContent()));
+						}
 					}
-					node = nList.item(0);
-					eElement = (Element) node;
-
-					int[] Bias = new int[eElement.getElementsByTagName("HasBias").getLength()];
-					for (int i = 0; i < Bias.length; i++) {
-						Bias[i] = Integer.parseInt(eElement.getElementsByTagName("HasBias").item(i).getTextContent());
-					}
-
-					neuralNetwork = new NeuralNetwork(Neurons, Bias, 0.01);
-
-					try {
-						nList = XMLsave.asXML(file).getElementsByTagName("ConnectionValues");
-					} catch (SAXException | IOException | ParserConfigurationException e1) {
-						e1.printStackTrace();
-					}
-					node = nList.item(0);
-					eElement = (Element) node;
-
-					for (Connection connection : neuralNetwork.connections) {
-						connection.setValue(Double.parseDouble(eElement.getElementsByTagName("ConnectionValue")
-								.item(neuralNetwork.connections.indexOf(connection)).getTextContent()));
-					}
-
 				} else {
 					System.out.println("File access cancelled by user.");
 				}
@@ -565,7 +585,7 @@ public class Run extends JFrame {
 			super.paintComponent(g);
 			setBackground(new Color(0, 66, 103));
 
-			if (Paused == false && !InputString.equals("")) {
+			if (Paused == false) {
 				try {
 					InputLines = getLines(InputString);
 				} catch (IOException e1) {
