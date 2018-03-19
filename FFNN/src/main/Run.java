@@ -39,12 +39,22 @@ import java.util.stream.DoubleStream;
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import Graphics.Drawing;
 import main.NN.Connection;
@@ -55,10 +65,10 @@ import main.NN.Neuron;
 public class Run extends JFrame {
 	public static ArrayList<Shape> shapes = new ArrayList<Shape>();
 	public static Rectangle screenSize = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
-	public static final int CANVAS_WIDTH = screenSize.width-480;
+	public static final int CANVAS_WIDTH = screenSize.width - 480;
 	public static final int CANVAS_HEIGHT = screenSize.height;
 	public static final int GRAPH_WIDTH = 440;
-	public static final int GRAPH_HEIGHT = screenSize.height-610;
+	public static final int GRAPH_HEIGHT = screenSize.height - 610;
 	public static final int CONTROL_WIDTH = 480;
 	public static final int CONTROL_HEIGHT = 570;
 	public static final int OUTPUT_WIDTH = 440;
@@ -96,8 +106,10 @@ public class Run extends JFrame {
 	private JTextField LearningRate = new JTextField();
 	private JTextField CustomNeurons = new JTextField();
 	private JTextField CustomBias = new JTextField();
-	private JTextField InputLocation = new JTextField();
 	private JTextField TestInput = new JTextField();
+	private JButton InputLocation = new JButton("Load Input");
+	private JButton SaveNN = new JButton("Save");
+	private JButton LoadNN = new JButton("Load");
 	private JButton Pause = new JButton("Pause");
 	private JButton SetNN = new JButton("Apply");
 	private JButton outputPanelButton = new JButton("Output Graph");
@@ -106,9 +118,9 @@ public class Run extends JFrame {
 	private JButton outputPanelButton2 = new JButton("Output Graph");
 	private JButton neuronPanelButton2 = new JButton("Inspect");
 	private JButton customizationPanelButton2 = new JButton("Customize");
+	private JButton Exit = new JButton();
 
-	public Run() {
-		
+	public Run() throws TransformerException, ParserConfigurationException {
 		try {
 			BasicNeuronImage = ImageIO.read(new File("src/Graphics/Simple_Neuron.png"));
 			BiasNeuronImage = ImageIO.read(new File("src/Graphics/Bias_Neuron.png"));
@@ -212,6 +224,19 @@ public class Run extends JFrame {
 			}
 		});
 
+		try {
+			Exit.setIcon(new ImageIcon(ImageIO.read(new File("src/images/exit.png"))));
+		} catch (Exception ex) {
+			System.out.println(ex);
+		}
+
+		Exit.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				System.exit(0);
+			}
+		});
+
 		Pause.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -264,20 +289,159 @@ public class Run extends JFrame {
 		SetNN.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				shapes.clear();
-				Drawing.Added = false;
-				Drawing.animationX = 0d;
-				Drawing.animation = new Timer();
-				Drawing.startAnimation();
-				InputString = InputLocation.getText();
-				NeuronComposition = Arrays
-						.stream(CustomNeurons.getText().substring(1, CustomNeurons.getText().length() - 1).split(","))
-						.map(String::trim).mapToInt(Integer::parseInt).toArray();
-				BiasComposition = Arrays
-						.stream(CustomBias.getText().substring(1, CustomBias.getText().length() - 1).split(","))
-						.map(String::trim).mapToInt(Integer::parseInt).toArray();
-				neuralNetwork = new NeuralNetwork(NeuronComposition, BiasComposition,
-						Double.parseDouble(LearningRate.getText()));
+				if (!CustomNeurons.getText().equals("") && !CustomBias.getText().equals("")
+						&& !LearningRate.getText().equals("")) {
+					shapes.clear();
+					Drawing.Added = false;
+					Drawing.animationX = -5d;
+					Drawing.animation = new Timer();
+					Drawing.startAnimation();
+
+					NeuronComposition = Arrays.stream(
+							CustomNeurons.getText().substring(1, CustomNeurons.getText().length() - 1).split(","))
+							.map(String::trim).mapToInt(Integer::parseInt).toArray();
+					BiasComposition = Arrays
+							.stream(CustomBias.getText().substring(1, CustomBias.getText().length() - 1).split(","))
+							.map(String::trim).mapToInt(Integer::parseInt).toArray();
+					neuralNetwork = new NeuralNetwork(NeuronComposition, BiasComposition,
+							Double.parseDouble(LearningRate.getText()));
+				}
+			}
+		});
+
+		InputLocation.addActionListener(new ActionListener() {
+
+			JFileChooser fileChooser = new JFileChooser();
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int returnVal = fileChooser.showOpenDialog(fileChooser);
+				if (returnVal == JFileChooser.APPROVE_OPTION) {
+					File file = fileChooser.getSelectedFile();
+					InputString = file.getAbsolutePath();
+				} else {
+					System.out.println("File access cancelled by user.");
+				}
+			}
+		});
+
+		SaveNN.addActionListener(new ActionListener() {
+
+			JFileChooser fileChooser = new JFileChooser();
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int returnVal = fileChooser.showOpenDialog(fileChooser);
+				if (returnVal == JFileChooser.APPROVE_OPTION) {
+					File file = fileChooser.getSelectedFile();
+					int[] Neurons = new int[neuralNetwork.layers.size()];
+					for (Layer layer : neuralNetwork.layers) {
+						Neurons[neuralNetwork.layers.indexOf(layer)] = layer.neurons.size();
+					}
+
+					int[] Bias = new int[neuralNetwork.layers.size()];
+					int i = 0;
+					for (Layer layer : neuralNetwork.layers) {
+						for (Neuron neuron : layer.neurons) {
+							if (neuron.Type == 4) {
+								Bias[i + 1] = 1;
+								i++;
+							} else {
+								Bias[i + 1] = 0;
+							}
+						}
+					}
+
+					Double[] Connections = new Double[neuralNetwork.connections.size()];
+					for (Connection connection : neuralNetwork.connections) {
+						Connections[neuralNetwork.connections.indexOf(connection)] = connection.getValue();
+					}
+					try {
+						XMLsave.writeDocumentToFile(Neurons, Bias, Connections, new File(file.getAbsolutePath()));
+					} catch (TransformerException e1) {
+						e1.printStackTrace();
+					} catch (ParserConfigurationException e1) {
+						e1.printStackTrace();
+					}
+				} else {
+					System.out.println("File access cancelled by user.");
+				}
+			}
+		});
+
+		LoadNN.addActionListener(new ActionListener() {
+
+			JFileChooser fileChooser = new JFileChooser();
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int returnVal = fileChooser.showOpenDialog(fileChooser);
+
+				String extension = "";
+
+				if (returnVal == JFileChooser.APPROVE_OPTION) {
+					File file = fileChooser.getSelectedFile();
+
+					int l = file.getAbsolutePath().lastIndexOf('.');
+					if (l >= 0) {
+						extension = file.getAbsolutePath().substring(l + 1);
+					}
+
+					if (extension.equals("xml")) {
+						Document InputFile = null;
+						try {
+							InputFile = XMLsave.asXML(file);
+						} catch (SAXException | IOException | ParserConfigurationException e2) {
+							e2.printStackTrace();
+						}
+						InputFile.getDocumentElement().normalize();
+						NodeList nList = null;
+						try {
+							nList = XMLsave.asXML(file).getElementsByTagName("Neurons");
+						} catch (SAXException | IOException | ParserConfigurationException e1) {
+							e1.printStackTrace();
+						}
+						Node node = nList.item(0);
+						Element eElement = (Element) node;
+
+						int[] Neurons = new int[eElement.getElementsByTagName("NumNeurons").getLength()];
+						for (int i = 0; i < Neurons.length; i++) {
+							Neurons[i] = Integer
+									.parseInt(eElement.getElementsByTagName("NumNeurons").item(i).getTextContent());
+						}
+
+						try {
+							nList = XMLsave.asXML(file).getElementsByTagName("Bias");
+						} catch (SAXException | IOException | ParserConfigurationException e1) {
+							e1.printStackTrace();
+						}
+						node = nList.item(0);
+						eElement = (Element) node;
+
+						int[] Bias = new int[eElement.getElementsByTagName("HasBias").getLength()];
+						for (int i = 0; i < Bias.length; i++) {
+							Bias[i] = Integer
+									.parseInt(eElement.getElementsByTagName("HasBias").item(i).getTextContent());
+						}
+
+						neuralNetwork = new NeuralNetwork(Neurons, Bias, 0.01);
+
+						try {
+							nList = XMLsave.asXML(file).getElementsByTagName("ConnectionValues");
+						} catch (SAXException | IOException | ParserConfigurationException e1) {
+							e1.printStackTrace();
+						}
+						node = nList.item(0);
+						eElement = (Element) node;
+
+						for (Connection connection : neuralNetwork.connections) {
+							connection.setValue(Double.parseDouble(eElement.getElementsByTagName("ConnectionValue")
+									.item(neuralNetwork.connections.indexOf(connection)).getTextContent()));
+						}
+					}
+				} else {
+					System.out.println("File access cancelled by user.");
+				}
 			}
 		});
 
@@ -297,6 +461,13 @@ public class Run extends JFrame {
 		neuronPanelButton2.setBounds(CONTROL_WIDTH - 140, 55, 120, 25);
 		SetNN.setBounds(20, 530, 100, 20);
 		InputLocation.setBounds(20, 180, 100, 20);
+		SaveNN.setBounds(CONTROL_WIDTH - 140, 250, 120, 20);
+		LoadNN.setBounds(CONTROL_WIDTH - 140, 290, 120, 20);
+		Exit.setBounds(20, 20, 43, 43);
+
+		Exit.setOpaque(false);
+		Exit.setContentAreaFilled(false);
+		Exit.setBorderPainted(false);
 
 		customizationPanel.setLayout(null);
 		customizationPanel.add(Pause);
@@ -305,6 +476,8 @@ public class Run extends JFrame {
 		customizationPanel.add(CustomBias);
 		customizationPanel.add(SetNN);
 		customizationPanel.add(InputLocation);
+		customizationPanel.add(SaveNN);
+		customizationPanel.add(LoadNN);
 		customizationPanel.add(TestInput);
 
 		JLabel LearningRateLabel = new JLabel("Learning Rate:");
@@ -313,8 +486,6 @@ public class Run extends JFrame {
 		CustomNeuronsLabel.setBounds(20, 80, 100, 20);
 		JLabel CustomBiasLabel = new JLabel("Bias Layout:");
 		CustomBiasLabel.setBounds(20, 120, 100, 20);
-		JLabel InputLabel = new JLabel("Input Location:");
-		InputLabel.setBounds(20, 160, 100, 20);
 		JLabel TestInputLabel = new JLabel("Test Input:");
 		TestInputLabel.setBounds(20, 240, 100, 20);
 		JLabel InfoLabel = new JLabel(
@@ -324,7 +495,6 @@ public class Run extends JFrame {
 		customizationPanel.add(LearningRateLabel);
 		customizationPanel.add(CustomNeuronsLabel);
 		customizationPanel.add(CustomBiasLabel);
-		customizationPanel.add(InputLabel);
 		customizationPanel.add(TestInputLabel);
 		customizationPanel.add(InfoLabel);
 		customizationPanel.add(outputPanelButton);
@@ -337,6 +507,9 @@ public class Run extends JFrame {
 		viewNeuron.setLayout(null);
 		viewNeuron.add(customizationPanelButton2);
 		viewNeuron.add(outputPanelButton2);
+
+		canvas.setLayout(null);
+		canvas.add(Exit);
 
 		controlPanel.add(customizationPanel, "customizationPanel");
 		controlPanel.add(outputPanel, "outputPanel");
@@ -351,9 +524,9 @@ public class Run extends JFrame {
 
 		Container cp = getContentPane();
 		cp.add(container);
-		
-		setTitle("Sensus Ai 1.0.0");
-		setSize(CANVAS_WIDTH+480, CANVAS_HEIGHT);
+
+		setTitle("Sensus Ai 1.0.3");
+		setSize(CANVAS_WIDTH + 480, CANVAS_HEIGHT);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setUndecorated(true);
 		setResizable(false);
@@ -412,7 +585,7 @@ public class Run extends JFrame {
 			super.paintComponent(g);
 			setBackground(new Color(0, 66, 103));
 
-			if (Paused == false && !InputString.equals("")) {
+			if (Paused == false) {
 				try {
 					InputLines = getLines(InputString);
 				} catch (IOException e1) {
@@ -561,7 +734,13 @@ public class Run extends JFrame {
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				new Run();
+				try {
+					new Run();
+				} catch (TransformerException e) {
+					e.printStackTrace();
+				} catch (ParserConfigurationException e) {
+					e.printStackTrace();
+				}
 			}
 		});
 	}

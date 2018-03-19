@@ -25,7 +25,7 @@ public class Drawing {
 	public static Dimension outputSize;
 	public static Point outputLocation;
 	public static Timer animation = new Timer();
-	public static Double animationX = -5d;
+	public static Double animationX = -8d;
 	public static boolean Added = false;
 
 	public static void startAnimation() {
@@ -51,7 +51,7 @@ public class Drawing {
 					graphLocation.y - (int) (Math.abs(point) * 240) + 20, 5, 5);
 		}
 
-		if (graphPoints.size() == 30) {
+		if (graphPoints.size() > 30) {
 			graphPoints.remove(0);
 		}
 	}
@@ -64,7 +64,7 @@ public class Drawing {
 					outputLocation.y - (int) (Math.abs(point) * 240) + 20, 5, 5);
 		}
 
-		if (outputPoints.size() == 30) {
+		if (outputPoints.size() > 30) {
 			outputPoints.remove(0);
 		}
 	}
