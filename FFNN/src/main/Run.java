@@ -199,7 +199,7 @@ public class Run extends JFrame {
 						}
 					}
 
-					if (distanceToLine < 5 && !FoundType) {
+					if (distanceToLine < 5 && !FoundType && SwingUtilities.isRightMouseButton(me)) {
 						for (Connection connection : neuralNetwork.connections) {
 							if (connection.N1.getLocation().equals((closestLine.getP1()))
 									&& connection.N2.getLocation().equals((closestLine.getP2()))) {
@@ -525,7 +525,7 @@ public class Run extends JFrame {
 		Container cp = getContentPane();
 		cp.add(container);
 
-		setTitle("Sensus Ai 1.1.0");
+		setTitle("Sensus Ai 1.1.1");
 		setSize(CANVAS_WIDTH + 480, CANVAS_HEIGHT);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setUndecorated(true);
