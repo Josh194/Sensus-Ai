@@ -9,6 +9,6 @@ Exit Button
 
 Input File Chooser
 
-Support For Multiple Neurons
+Support For Multiple Output Neurons
 
 Save/Load Neural Network
