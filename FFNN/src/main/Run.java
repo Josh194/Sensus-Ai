@@ -86,8 +86,9 @@ public class Run extends JFrame {
 
 	public Boolean Paused = true;
 	public String InputString = "";
-	public static NeuralNetwork neuralNetwork = new NeuralNetwork(new int[] { 2, 4, 6, 5, 3, 1, },
-			new int[] { 0, 1, 1, 0, 0, 0, }, 0.01);
+	public static int[] NeuronComposition = new int[] { 2, 4, 6, 5, 3, 1 };
+	public static int[] BiasComposition = new int[] { 0, 1, 1, 0, 0, 0 };
+	public static NeuralNetwork neuralNetwork = new NeuralNetwork(NeuronComposition, BiasComposition, 0.01);
 	private static int InputLine = 0;
 	private static int InputLines;
 	private static Double[] Input = new Double[neuralNetwork.layers.get(0).neurons.size() + 1];
@@ -100,9 +101,7 @@ public class Run extends JFrame {
 	private NNCustomization customizationPanel;
 	private OutputPanel outputPanel;
 	private ViewNeuron viewNeuron;
-
-	private int[] NeuronComposition;
-	private int[] BiasComposition;
+	private MMenu mMenu;
 
 	private JTextField LearningRate = new JTextField();
 	private JTextField CustomNeurons = new JTextField();
@@ -119,6 +118,8 @@ public class Run extends JFrame {
 	private JButton outputPanelButton2 = new JButton("Output Graph");
 	private JButton neuronPanelButton2 = new JButton("Inspect");
 	private JButton customizationPanelButton2 = new JButton("Customize");
+	private JButton Start = new JButton("Start");
+	private JButton ExitMenu = new JButton();
 	private JButton Exit = new JButton();
 
 	public Run() throws TransformerException, ParserConfigurationException {
@@ -151,6 +152,8 @@ public class Run extends JFrame {
 		outputPanel.setPreferredSize(new Dimension(OUTPUT_WIDTH + 40, OUTPUT_HEIGHT + 40));
 		viewNeuron = new ViewNeuron();
 		viewNeuron.setPreferredSize(new Dimension(NEURON_INFO_WIDTH, NEURON_INFO_HEIGHT));
+		mMenu = new MMenu();
+		mMenu.setPreferredSize(new Dimension(screenSize.width, screenSize.height));
 
 		Action LearningRateChange = new AbstractAction() {
 			@Override
@@ -226,15 +229,38 @@ public class Run extends JFrame {
 		});
 
 		try {
+			ExitMenu.setIcon(new ImageIcon(ImageIO.read(new File("src/images/exit.png"))));
 			Exit.setIcon(new ImageIcon(ImageIO.read(new File("src/images/exit.png"))));
 		} catch (Exception ex) {
 			System.out.println(ex);
 		}
 
-		Exit.addActionListener(new ActionListener() {
+		ExitMenu.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				System.exit(0);
+			}
+		});
+
+		Exit.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				mMenu.setVisible(true);
+				mMenu.validate();
+				canvas.setVisible(false);
+				graphPanel.setVisible(false);
+				controlPanel.setVisible(false);
+			}
+		});
+		
+		Start.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				mMenu.setVisible(false);
+				mMenu.invalidate();
+				canvas.setVisible(true);
+				graphPanel.setVisible(true);
+				controlPanel.setVisible(true);
 			}
 		});
 
@@ -316,13 +342,15 @@ public class Run extends JFrame {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				
+
 				fileChooser.setFileFilter((new FileNameExtensionFilter("text files (*.txt)", "txt")));
 				int returnVal = fileChooser.showOpenDialog(fileChooser);
-				
+
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
 					File file = fileChooser.getSelectedFile();
 					InputString = file.getAbsolutePath();
+					neuralNetwork.setMinRange(GetNumberFromFile.getSmallestNumber(file.getAbsolutePath()));
+					neuralNetwork.setMaxRange(GetNumberFromFile.getLargestNumber(file.getAbsolutePath()));
 				} else {
 					System.out.println("File access cancelled by user.");
 				}
@@ -461,8 +489,13 @@ public class Run extends JFrame {
 		InputLocation.setBounds(20, 180, 100, 20);
 		SaveNN.setBounds(CONTROL_WIDTH - 140, 250, 120, 20);
 		LoadNN.setBounds(CONTROL_WIDTH - 140, 290, 120, 20);
+		ExitMenu.setBounds(20, 20, 43, 43);
 		Exit.setBounds(20, 20, 43, 43);
+		Start.setBounds((screenSize.width/2)-50, 900, 100, 20);
 
+		ExitMenu.setOpaque(false);
+		ExitMenu.setContentAreaFilled(false);
+		ExitMenu.setBorderPainted(false);
 		Exit.setOpaque(false);
 		Exit.setContentAreaFilled(false);
 		Exit.setBorderPainted(false);
@@ -506,6 +539,10 @@ public class Run extends JFrame {
 		viewNeuron.add(customizationPanelButton2);
 		viewNeuron.add(outputPanelButton2);
 
+		mMenu.setLayout(null);
+		mMenu.add(ExitMenu);
+		mMenu.add(Start);
+
 		canvas.setLayout(null);
 		canvas.add(Exit);
 
@@ -513,6 +550,7 @@ public class Run extends JFrame {
 		controlPanel.add(outputPanel, "outputPanel");
 		controlPanel.add(viewNeuron, "viewNeuron");
 
+		container.add(mMenu);
 		container.add(canvas, new GridBagConstraints(0, 0, 2, 3, 0d, 0d, GridBagConstraints.LINE_START,
 				GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
 		container.add(graphPanel, new GridBagConstraints(2, 1, 1, 1, 0d, 0d, GridBagConstraints.LINE_END,
@@ -520,10 +558,14 @@ public class Run extends JFrame {
 		container.add(controlPanel, new GridBagConstraints(2, 2, 1, 1, 0d, 0d, GridBagConstraints.FIRST_LINE_END,
 				GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
 
+		canvas.setVisible(false);
+		graphPanel.setVisible(false);
+		controlPanel.setVisible(false);
+
 		Container cp = getContentPane();
 		cp.add(container);
 
-		setTitle("Sensus Ai 1.1.1");
+		setTitle("Sensus Ai 1.1.2");
 		setSize(CANVAS_WIDTH + 480, CANVAS_HEIGHT);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setUndecorated(true);
@@ -561,7 +603,7 @@ public class Run extends JFrame {
 	}
 
 	public static void loadInput(String File) {
-		for (int i = 0; i <= neuralNetwork.layers.get(0).neurons.size(); i++) {
+		for (int i = 0; i <= neuralNetwork.layers.get(0).neurons.size() - BiasComposition[0]; i++) {
 			try {
 				Input[i] = Double.parseDouble(Files.readAllLines(Paths.get(File)).get(InputLine));
 				if (InputLine == InputLines) {
@@ -690,6 +732,20 @@ public class Run extends JFrame {
 					new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON));
 
 			g2.drawRect(10, 10, CONTROL_WIDTH - 20, CONTROL_HEIGHT - 20);
+
+			repaint();
+		}
+	}
+
+	private class MMenu extends JPanel {
+		@Override
+		public void paintComponent(Graphics g) {
+			super.paintComponent(g);
+			setBackground(new Color(0, 66, 103));
+
+			Graphics2D g2 = (Graphics2D) g;
+			g2.setRenderingHints(
+					new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON));
 
 			repaint();
 		}
