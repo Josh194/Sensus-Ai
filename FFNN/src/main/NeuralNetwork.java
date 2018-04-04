@@ -21,11 +21,10 @@ public class NeuralNetwork {
 	Color HiddenColor = new Color(81, 204, 65);
 	Color OutputColor = new Color(255, 98, 36);
 	Color BiasColor = new Color(255, 153, 248);
-	Color color = new Color(0, 0, 0);
 	Double Error;
 	Double Output;
-	Double MinRange = -2.0;
-	Double MaxRange = 2.0;
+	private Double MinRange = 0d;
+	private Double MaxRange = 1d;
 	private static int NX;
 	private static int NY;
 
@@ -40,7 +39,15 @@ public class NeuralNetwork {
 		for (Layer layer : layers) {
 			if (layers.indexOf(layer) == 0) {
 				for (int i = 0; i < NeuralNetworkComposition[layers.indexOf(layer)]; i++) {
-					layer.addNeuron(new Neuron(0d, layer, 2, InputColor));
+					if (i == NeuralNetworkComposition[layers.indexOf(layer)] - 1) {
+						if (NeuralNetworkBiasComposition[layers.indexOf(layer)] == 1) {
+							layer.addNeuron(new Neuron(1d, layer, 4, BiasColor));
+						} else {
+							layer.addNeuron(new Neuron(0d, layer, 2, InputColor));
+						}
+					} else {
+						layer.addNeuron(new Neuron(0d, layer, 2, InputColor));
+					}
 				}
 			} else if (layers.indexOf(layer) == (layers.size() - 1)) {
 				for (int i = 0; i < NeuralNetworkComposition[layers.indexOf(layer)]; i++) {
@@ -77,22 +84,26 @@ public class NeuralNetwork {
 
 		for (Layer layer : layers) {
 			for (Neuron neuron : layer.neurons) {
-				neuron.setMinRange(MinRange);
-				neuron.setMaxRange(MaxRange);
+				neuron.setMinRange(getMinRange());
+				neuron.setMaxRange(getMaxRange());
 			}
 		}
 	}
 
 	public Double sigmoidDerivative(Double input) {
-		return (((MaxRange - MinRange) * Math.pow(2.71828, input)) / Math.pow((Math.pow(2.71828, input) + 1), 2));
+		return (((getMaxRange() - getMinRange()) * Math.pow(2.71828, input))
+				/ Math.pow((Math.pow(2.71828, input) + 1), 2));
 	}
 
 	public void setInput(ArrayList<Double> input) {
 		Input = input;
-		TargetOutput = new ArrayList<Double>(
-				input.subList(Math.max(input.size() - layers.get(layers.size() - 1).neurons.size(), 0), input.size()));
+		TargetOutput = new ArrayList<Double>(input.subList(
+				Math.max(input.size() - layers.get(layers.size() - 1).neurons.size() - Run.BiasComposition[0], 0),
+				input.size()));
 		for (Neuron neuron : layers.get(0).neurons) {
-			neuron.setValue(input.get(layers.get(0).neurons.indexOf(neuron)));
+			if (neuron.Type != 4) {
+				neuron.setValue(input.get(layers.get(0).neurons.indexOf(neuron)));
+			}
 		}
 	}
 
@@ -110,12 +121,14 @@ public class NeuralNetwork {
 				}
 			}
 		}
+	}
 
+	public void feedBackward() {
 		for (Neuron neuron : layers.get(layers.size() - 1).neurons) {
 			Error = TargetOutput.get(layers.get(layers.size() - 1).neurons.indexOf(neuron)) - neuron.getValue();
 			neuron.setError(Error);
 			Output = neuron.getValue();
-			if (Drawing.outputPoints.size() == 30) {
+			if (Drawing.outputPoints.size() > 30) {
 				Drawing.outputPoints.remove(0);
 			}
 		}
@@ -126,9 +139,7 @@ public class NeuralNetwork {
 		}
 		Drawing.graphPoints.add(sum / layers.get(layers.size() - 1).neurons.size());
 		Drawing.outputPoints.add(Output);
-	}
-
-	public void feedBackward() {
+		
 		Collections.reverse(connections);
 		for (Connection connection : connections) {
 			connection.N1.setError((connection.N1.getError() + connection.N2.getError() * connection.getValue()));
@@ -137,6 +148,32 @@ public class NeuralNetwork {
 		for (Connection connection : connections) {
 			connection.setValue(connection.getValue() + (TeachingRate * connection.N2.getError()
 					* sigmoidDerivative(connection.N2.getValue()) * connection.N1.getValue()));
+		}
+	}
+
+	public Double getMinRange() {
+		return MinRange;
+	}
+
+	public void setMinRange(Double minRange) {
+		MinRange = minRange;
+		for (Layer layer : layers) {
+			for (Neuron neuron : layer.neurons) {
+				neuron.setMinRange(MinRange);;
+			}
+		}
+	}
+
+	public Double getMaxRange() {
+		return MaxRange;
+	}
+
+	public void setMaxRange(Double maxRange) {
+		MaxRange = maxRange;
+		for (Layer layer : layers) {
+			for (Neuron neuron : layer.neurons) {
+				neuron.setMaxRange(MaxRange);;
+			}
 		}
 	}
 }
