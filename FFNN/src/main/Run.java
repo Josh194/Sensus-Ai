@@ -73,7 +73,7 @@ public class Run extends JFrame {
 	public static final int CONTROL_WIDTH = 480;
 	public static final int CONTROL_HEIGHT = 570;
 	public static final int OUTPUT_WIDTH = 440;
-	public static final int OUTPUT_HEIGHT = 530;
+	public static final int OUTPUT_HEIGHT = screenSize.height - GRAPH_HEIGHT - 80;
 	public static final int NEURON_INFO_WIDTH = 480;
 	public static final int NEURON_INFO_HEIGHT = 570;
 
@@ -93,6 +93,8 @@ public class Run extends JFrame {
 	private static int InputLines;
 	private static Double[] Input = new Double[neuralNetwork.layers.get(0).neurons.size() + 1];
 	private static Connection connectionToRemove = null;
+	private static Double MaxRange = 0d;
+	private static Double MinRange = 0d;
 
 	private JPanel container = new JPanel();
 	private DrawCanvas canvas;
@@ -165,6 +167,16 @@ public class Run extends JFrame {
 		Action TestInputAction = new AbstractAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				
+				for (Layer layer : neuralNetwork.layers) {
+					for (Neuron neuron : layer.neurons) {
+						if (neuron.Type != 4) {
+							neuron.setError(0.0);
+							neuron.setValue(0.0);
+						}
+					}
+				}
+				
 				List<Double> Input = DoubleStream
 						.of(Arrays.stream(TestInput.getText().substring(1, TestInput.getText().length() - 1).split(","))
 								.map(String::trim).mapToDouble(Double::parseDouble).toArray())
@@ -252,7 +264,7 @@ public class Run extends JFrame {
 				controlPanel.setVisible(false);
 			}
 		});
-		
+
 		Start.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -332,6 +344,8 @@ public class Run extends JFrame {
 							.map(String::trim).mapToInt(Integer::parseInt).toArray();
 					neuralNetwork = new NeuralNetwork(NeuronComposition, BiasComposition,
 							Double.parseDouble(LearningRate.getText()));
+					neuralNetwork.setMinRange(MinRange);
+					neuralNetwork.setMaxRange(MaxRange);
 				}
 			}
 		});
@@ -349,8 +363,10 @@ public class Run extends JFrame {
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
 					File file = fileChooser.getSelectedFile();
 					InputString = file.getAbsolutePath();
-					neuralNetwork.setMinRange(GetNumberFromFile.getSmallestNumber(file.getAbsolutePath()));
-					neuralNetwork.setMaxRange(GetNumberFromFile.getLargestNumber(file.getAbsolutePath()));
+					MinRange = GetNumberFromFile.getSmallestNumber(file.getAbsolutePath());
+					MaxRange = GetNumberFromFile.getLargestNumber(file.getAbsolutePath());
+					neuralNetwork.setMinRange(MinRange);
+					neuralNetwork.setMaxRange(MaxRange);
 				} else {
 					System.out.println("File access cancelled by user.");
 				}
@@ -491,7 +507,7 @@ public class Run extends JFrame {
 		LoadNN.setBounds(CONTROL_WIDTH - 140, 290, 120, 20);
 		ExitMenu.setBounds(20, 20, 43, 43);
 		Exit.setBounds(20, 20, 43, 43);
-		Start.setBounds((screenSize.width/2)-50, 900, 100, 20);
+		Start.setBounds((screenSize.width / 2) - 50, 900, 100, 20);
 
 		ExitMenu.setOpaque(false);
 		ExitMenu.setContentAreaFilled(false);
@@ -669,9 +685,15 @@ public class Run extends JFrame {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-			for (Layer layer : neuralNetwork.layers) {
-				for (Neuron neuron : layer.neurons) {
-					neuron.setError(0.0);
+
+			if (Paused == false) {
+				for (Layer layer : neuralNetwork.layers) {
+					for (Neuron neuron : layer.neurons) {
+						if (neuron.Type != 4) {
+							neuron.setError(0.0);
+							neuron.setValue(0.0);
+						}
+					}
 				}
 			}
 
@@ -710,10 +732,12 @@ public class Run extends JFrame {
 			g2.setRenderingHints(
 					new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON));
 
-			g2.drawRect(10, 10, GRAPH_WIDTH + 20, GRAPH_HEIGHT + 110);
+			g2.drawRect(10, 10, OUTPUT_WIDTH + 20, OUTPUT_HEIGHT + 20);
 			g2.setColor(Color.WHITE);
-			g2.drawLine(20, GRAPH_HEIGHT + 110, GRAPH_WIDTH + 20, GRAPH_HEIGHT + 110);
-			g2.drawLine(20, GRAPH_HEIGHT + 110, 20, 20);
+			g2.drawLine(20, OUTPUT_HEIGHT + 20, OUTPUT_WIDTH + 20, OUTPUT_HEIGHT + 20);
+			g2.drawLine(20, OUTPUT_HEIGHT + 20, 20, 20);
+			int ZeroHeight = 20 + (int) (((0-neuralNetwork.getMinRange())/(neuralNetwork.getMaxRange()-neuralNetwork.getMinRange()))*OUTPUT_HEIGHT);
+			g2.drawLine(20, OUTPUT_HEIGHT - ZeroHeight + 40, OUTPUT_WIDTH + 20, OUTPUT_HEIGHT - ZeroHeight + 40);
 
 			Drawing.updateOutput(g2);
 

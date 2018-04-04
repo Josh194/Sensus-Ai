@@ -21,11 +21,10 @@ public class NeuralNetwork {
 	Color HiddenColor = new Color(81, 204, 65);
 	Color OutputColor = new Color(255, 98, 36);
 	Color BiasColor = new Color(255, 153, 248);
-	Color color = new Color(0, 0, 0);
 	Double Error;
 	Double Output;
 	private Double MinRange = 0d;
-	private Double MaxRange = 0d;
+	private Double MaxRange = 1d;
 	private static int NX;
 	private static int NY;
 
@@ -122,12 +121,14 @@ public class NeuralNetwork {
 				}
 			}
 		}
+	}
 
+	public void feedBackward() {
 		for (Neuron neuron : layers.get(layers.size() - 1).neurons) {
 			Error = TargetOutput.get(layers.get(layers.size() - 1).neurons.indexOf(neuron)) - neuron.getValue();
 			neuron.setError(Error);
 			Output = neuron.getValue();
-			if (Drawing.outputPoints.size() < 30) {
+			if (Drawing.outputPoints.size() > 30) {
 				Drawing.outputPoints.remove(0);
 			}
 		}
@@ -138,9 +139,7 @@ public class NeuralNetwork {
 		}
 		Drawing.graphPoints.add(sum / layers.get(layers.size() - 1).neurons.size());
 		Drawing.outputPoints.add(Output);
-	}
-
-	public void feedBackward() {
+		
 		Collections.reverse(connections);
 		for (Connection connection : connections) {
 			connection.N1.setError((connection.N1.getError() + connection.N2.getError() * connection.getValue()));
