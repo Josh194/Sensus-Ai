@@ -581,7 +581,7 @@ public class Run extends JFrame {
 		Container cp = getContentPane();
 		cp.add(container);
 
-		setTitle("Sensus Ai 1.1.2");
+		setTitle("Sensus Ai 1.2.0");
 		setSize(CANVAS_WIDTH + 480, CANVAS_HEIGHT);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setUndecorated(true);
