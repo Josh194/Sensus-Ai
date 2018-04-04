@@ -48,7 +48,8 @@ public class Drawing {
 		for (Double point : graphPoints) {
 			g2.setColor(Color.BLACK);
 			g2.fillOval(graphLocation.x + ((graphSize.width / graphPoints.size()) * graphPoints.indexOf(point)),
-					graphLocation.y - (int) (Math.abs(point) * 240) + 20, 5, 5);
+					graphLocation.y - (int) (Math.abs(point) * (graphLocation.y / Run.neuralNetwork.getMaxRange())) + 15,
+					5, 5);
 		}
 
 		if (graphPoints.size() > 30) {
@@ -61,9 +62,10 @@ public class Drawing {
 		for (Double point : outputPoints) {
 			g2.setColor(Color.BLACK);
 			g2.fillOval(outputLocation.x + ((outputSize.width / outputPoints.size()) * outputPoints.indexOf(point)),
-					outputLocation.y - (int) (Math.abs(point) * 240) + 20, 5, 5);
+					(int) ((outputLocation.y*(point+Math.abs(Run.neuralNetwork.getMinRange()*Run.neuralNetwork.getMaxRange())/2))/Math.abs(Run.neuralNetwork.getMinRange()+Run.neuralNetwork.getMaxRange()))+40,
+					5, 5);
 		}
-
+		
 		if (outputPoints.size() > 30) {
 			outputPoints.remove(0);
 		}
