@@ -107,7 +107,7 @@ public class Drawing {
 	public static void drawLine(Graphics2D g2, int x1, int y1, int x2, int y2, int size, double timeOffset,
 			Color color) {
 		g2.setColor(color);
-		g2.setStroke(new BasicStroke(java.lang.Math.abs(size)));
+		g2.setStroke(new BasicStroke(Math.abs(size)));
 		g2.drawLine(x1, y1, (int) (((x2 - x1) * animationPercent(timeOffset)) + x1),
 				(int) (((y2 - y1) * animationPercent(timeOffset)) + y1));
 		if (Added) {
