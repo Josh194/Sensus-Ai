@@ -116,8 +116,8 @@ public class Run extends JFrame {
 	private JButton InputLocation = new JButton("Load Input");
 	private JButton SaveNN = new JButton("Save");
 	private JButton LoadNN = new JButton("Load");
-	private String[] ActivationFunctions = { "Sigmoid", "Step" };
-	private JComboBox ChooseActivation = new JComboBox(ActivationFunctions);
+	private String[] ActivationFunctions = { "Sigmoid", "Gaussian" };
+	private JComboBox<String> ChooseActivation = new JComboBox<String>(ActivationFunctions);
 	private JButton Pause = new JButton("Pause");
 	private JButton outputPanelButton = new JButton("Output Graph");
 	private JButton neuronPanelButton = new JButton("Inspect");

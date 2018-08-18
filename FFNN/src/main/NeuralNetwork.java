@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import Graphics.Drawing;
+import main.NN.AFHandler;
 import main.NN.Connection;
 import main.NN.Layer;
 import main.NN.Neuron;
@@ -91,11 +92,6 @@ public class NeuralNetwork {
 			}
 		}
 	}
-	
-	public Double sigmoidDerivative(Double input) {
-		return (((getMaxRange() - getMinRange()) * Math.pow(2.71828, input))
-				/ Math.pow((Math.pow(2.71828, input) + 1), 2));
-	}
 
 	public void setInput(ArrayList<Double> input) {
 		Input = input;
@@ -149,7 +145,8 @@ public class NeuralNetwork {
 		Collections.reverse(connections);
 		for (Connection connection : connections) {
 			connection.setValue(connection.getValue() + (TeachingRate * connection.N2.getError()
-					* sigmoidDerivative(connection.N2.getValue()) * connection.N1.getValue()));
+					* AFHandler.AFDerivative(Run.AF, connection.N2.getValue(), MinRange, MaxRange)
+					* connection.N1.getValue()));
 		}
 	}
 

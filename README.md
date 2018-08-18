@@ -6,7 +6,7 @@ Version: 1.2.0
 New:
 
 Gui for adding neurons. (WIP)
-Choose Activation Function (WIP)
+Choose Activation Function
 Revamped Start Animation
 
 Bugs:

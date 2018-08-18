@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Point;
 
 import main.Run;
+import main.NN.AFHandler;
 
 public class Neuron {
 
@@ -25,11 +26,11 @@ public class Neuron {
 
 	public void update() {
 		if (Type == 1) {
-			Value = ActivationFunction.activationFunction(Run.AF, Value, MinRange, MaxRange);
+			Value = AFHandler.activationFunction(Run.AF, Value, MinRange, MaxRange);
 		} else if (Type == 2) {
-			Value = ActivationFunction.activationFunction(Run.AF, Value, MinRange, MaxRange);
+			Value = AFHandler.activationFunction(Run.AF, Value, MinRange, MaxRange);
 		} else if (Type == 3) {
-			Value = ActivationFunction.activationFunction(Run.AF, Value, MinRange, MaxRange);
+			Value = AFHandler.activationFunction(Run.AF, Value, MinRange, MaxRange);
 		}
 	}
 
