@@ -5,12 +5,10 @@ Version: 1.2.0
 
 New:
 
-Right Click to Remove Neuron
+Gui for adding neurons. (WIP)
+Choose Activation Function (WIP)
+Revamped Start Animation
 
-Bias Neurons Allowed in Input Layer
+Bugs:
 
-Home Screen
-
-BugFixes
-
-Scaling
+It is impossible to add an output neuron, but you can remove one.

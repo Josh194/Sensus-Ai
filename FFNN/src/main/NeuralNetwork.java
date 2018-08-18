@@ -41,6 +41,7 @@ public class NeuralNetwork {
 				for (int i = 0; i < NeuralNetworkComposition[layers.indexOf(layer)]; i++) {
 					if (i == NeuralNetworkComposition[layers.indexOf(layer)] - 1) {
 						if (NeuralNetworkBiasComposition[layers.indexOf(layer)] == 1) {
+							layer.addNeuron(new Neuron(0d, layer, 2, InputColor));
 							layer.addNeuron(new Neuron(1d, layer, 4, BiasColor));
 						} else {
 							layer.addNeuron(new Neuron(0d, layer, 2, InputColor));
@@ -60,6 +61,7 @@ public class NeuralNetwork {
 				for (int i = 0; i < NeuralNetworkComposition[layers.indexOf(layer)]; i++) {
 					if (i == NeuralNetworkComposition[layers.indexOf(layer)] - 1) {
 						if (NeuralNetworkBiasComposition[layers.indexOf(layer)] == 1) {
+							layer.addNeuron(new Neuron(0d, layer, 1, HiddenColor));
 							layer.addNeuron(new Neuron(1d, layer, 4, BiasColor));
 						} else {
 							layer.addNeuron(new Neuron(0d, layer, 1, HiddenColor));
@@ -89,7 +91,7 @@ public class NeuralNetwork {
 			}
 		}
 	}
-
+	
 	public Double sigmoidDerivative(Double input) {
 		return (((getMaxRange() - getMinRange()) * Math.pow(2.71828, input))
 				/ Math.pow((Math.pow(2.71828, input) + 1), 2));
@@ -139,7 +141,7 @@ public class NeuralNetwork {
 		}
 		Drawing.graphPoints.add(sum / layers.get(layers.size() - 1).neurons.size());
 		Drawing.outputPoints.add(Output);
-		
+
 		Collections.reverse(connections);
 		for (Connection connection : connections) {
 			connection.N1.setError((connection.N1.getError() + connection.N2.getError() * connection.getValue()));
@@ -159,7 +161,8 @@ public class NeuralNetwork {
 		MinRange = minRange;
 		for (Layer layer : layers) {
 			for (Neuron neuron : layer.neurons) {
-				neuron.setMinRange(MinRange);;
+				neuron.setMinRange(MinRange);
+				;
 			}
 		}
 	}
@@ -172,7 +175,8 @@ public class NeuralNetwork {
 		MaxRange = maxRange;
 		for (Layer layer : layers) {
 			for (Neuron neuron : layer.neurons) {
-				neuron.setMaxRange(MaxRange);;
+				neuron.setMaxRange(MaxRange);
+				;
 			}
 		}
 	}

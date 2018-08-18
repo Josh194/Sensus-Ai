@@ -8,6 +8,7 @@ public class Connection {
 	public Neuron N1;
 	public Neuron N2;
 	Color Color;
+	public Double RandomAnimOffset = Math.random();
 
 	public Connection(Double value, Neuron n1, Neuron n2, Color color) {
 		Value = value;

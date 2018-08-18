@@ -3,6 +3,8 @@ package main.NN;
 import java.awt.Color;
 import java.awt.Point;
 
+import main.Run;
+
 public class Neuron {
 
 	Double Value;
@@ -23,11 +25,11 @@ public class Neuron {
 
 	public void update() {
 		if (Type == 1) {
-			Value = ((MaxRange - MinRange) / (1 + (Math.pow(2.71828, -Value)))) + MinRange;
+			Value = ActivationFunction.activationFunction(Run.AF, Value, MinRange, MaxRange);
 		} else if (Type == 2) {
-			Value = ((MaxRange - MinRange) / (1 + (Math.pow(2.71828, -Value)))) + MinRange;
+			Value = ActivationFunction.activationFunction(Run.AF, Value, MinRange, MaxRange);
 		} else if (Type == 3) {
-			Value = ((MaxRange - MinRange) / (1 + (Math.pow(2.71828, -Value)))) + MinRange;
+			Value = ActivationFunction.activationFunction(Run.AF, Value, MinRange, MaxRange);
 		}
 	}
 
