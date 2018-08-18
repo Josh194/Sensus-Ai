@@ -41,10 +41,13 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -86,16 +89,19 @@ public class Run extends JFrame {
 
 	public Boolean Paused = true;
 	public String InputString = "";
-	public static int[] NeuronComposition = new int[] { 2, 4, 6, 5, 3, 1 };
+	public static int[] NeuronComposition = new int[] { 2, 3, 5, 5, 3, 1 };
 	public static int[] BiasComposition = new int[] { 0, 1, 1, 0, 0, 0 };
 	public static NeuralNetwork neuralNetwork = new NeuralNetwork(NeuronComposition, BiasComposition, 0.01);
+	public static int AF = 0;
 	private static int InputLine = 0;
 	private static int InputLines;
 	private static Double[] Input = new Double[neuralNetwork.layers.get(0).neurons.size() + 1];
 	private static Connection connectionToRemove = null;
+	private static Integer NeuronLayer = null;
 	private static Double MaxRange = 0d;
 	private static Double MinRange = 0d;
 
+	// Gui Variables
 	private JPanel container = new JPanel();
 	private DrawCanvas canvas;
 	private GraphPanel graphPanel;
@@ -106,14 +112,13 @@ public class Run extends JFrame {
 	private MMenu mMenu;
 
 	private JTextField LearningRate = new JTextField();
-	private JTextField CustomNeurons = new JTextField();
-	private JTextField CustomBias = new JTextField();
 	private JTextField TestInput = new JTextField();
 	private JButton InputLocation = new JButton("Load Input");
 	private JButton SaveNN = new JButton("Save");
 	private JButton LoadNN = new JButton("Load");
+	private String[] ActivationFunctions = { "Sigmoid", "Step" };
+	private JComboBox ChooseActivation = new JComboBox(ActivationFunctions);
 	private JButton Pause = new JButton("Pause");
-	private JButton SetNN = new JButton("Apply");
 	private JButton outputPanelButton = new JButton("Output Graph");
 	private JButton neuronPanelButton = new JButton("Inspect");
 	private JButton customizationPanelButton = new JButton("Customize");
@@ -125,6 +130,23 @@ public class Run extends JFrame {
 	private JButton Exit = new JButton();
 
 	public Run() throws TransformerException, ParserConfigurationException {
+
+		initGui();
+
+		initMouseListener();
+
+		initActionListeners();
+
+		setTitle("Sensus Ai 1.2.0");
+		setSize(CANVAS_WIDTH + 480, CANVAS_HEIGHT);
+		setDefaultCloseOperation(EXIT_ON_CLOSE);
+		setUndecorated(true);
+		setResizable(false);
+		setVisible(true);
+	}
+
+	private void initGui() {
+
 		try {
 			BasicNeuronImage = ImageIO.read(new File("src/Graphics/Simple_Neuron.png"));
 			BiasNeuronImage = ImageIO.read(new File("src/Graphics/Bias_Neuron.png"));
@@ -134,12 +156,17 @@ public class Run extends JFrame {
 			e1.printStackTrace();
 		}
 
+		try {
+			ExitMenu.setIcon(new ImageIcon(ImageIO.read(new File("src/images/exit.png"))));
+			Exit.setIcon(new ImageIcon(ImageIO.read(new File("src/images/exit.png"))));
+		} catch (Exception ex) {
+			System.out.println(ex);
+		}
+
 		Drawing.graphSize = new Dimension(GRAPH_WIDTH, GRAPH_HEIGHT);
 		Drawing.graphLocation = new Point(20, GRAPH_HEIGHT);
 		Drawing.outputSize = new Dimension(OUTPUT_WIDTH, OUTPUT_HEIGHT);
 		Drawing.outputLocation = new Point(20, OUTPUT_HEIGHT);
-
-		Drawing.startAnimation();
 
 		container.setLayout(new GridBagLayout());
 		canvas = new DrawCanvas();
@@ -157,35 +184,89 @@ public class Run extends JFrame {
 		mMenu = new MMenu();
 		mMenu.setPreferredSize(new Dimension(screenSize.width, screenSize.height));
 
-		Action LearningRateChange = new AbstractAction() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				neuralNetwork.TeachingRate = Double.parseDouble(LearningRate.getText());
-			}
-		};
+		LearningRate.setBounds(20, 40, 100, 20);
+		ChooseActivation.setBounds(20, 290, 200, 20);
+		Pause.setBounds(360, 530, 100, 20);
+		TestInput.setBounds(20, 530, 100, 20);
+		customizationPanelButton.setBounds(CONTROL_WIDTH - 140, 20, 120, 25);
+		outputPanelButton.setBounds(CONTROL_WIDTH - 140, 20, 120, 25);
+		neuronPanelButton.setBounds(CONTROL_WIDTH - 140, 55, 120, 25);
+		customizationPanelButton2.setBounds(CONTROL_WIDTH - 140, 20, 120, 25);
+		outputPanelButton2.setBounds(CONTROL_WIDTH - 140, 60, 120, 25);
+		neuronPanelButton2.setBounds(CONTROL_WIDTH - 140, 55, 120, 25);
+		InputLocation.setBounds(20, 250, 200, 20);
+		SaveNN.setBounds(CONTROL_WIDTH - 140, 250, 120, 20);
+		LoadNN.setBounds(CONTROL_WIDTH - 140, 290, 120, 20);
+		ExitMenu.setBounds(20, 20, 43, 43);
+		Exit.setBounds(20, 20, 43, 43);
+		Start.setBounds((screenSize.width / 2) - 50, 900, 100, 20);
 
-		Action TestInputAction = new AbstractAction() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				
-				for (Layer layer : neuralNetwork.layers) {
-					for (Neuron neuron : layer.neurons) {
-						if (neuron.Type != 4) {
-							neuron.setError(0.0);
-							neuron.setValue(0.0);
-						}
-					}
-				}
-				
-				List<Double> Input = DoubleStream
-						.of(Arrays.stream(TestInput.getText().substring(1, TestInput.getText().length() - 1).split(","))
-								.map(String::trim).mapToDouble(Double::parseDouble).toArray())
-						.boxed().collect(Collectors.toList());
-				neuralNetwork.setInput(new ArrayList<Double>(Input));
-				neuralNetwork.feedForward();
-			}
-		};
+		ExitMenu.setOpaque(false);
+		ExitMenu.setContentAreaFilled(false);
+		ExitMenu.setBorderPainted(false);
+		Exit.setOpaque(false);
+		Exit.setContentAreaFilled(false);
+		Exit.setBorderPainted(false);
 
+		customizationPanel.setLayout(null);
+		customizationPanel.add(ChooseActivation);
+		customizationPanel.add(Pause);
+		customizationPanel.add(LearningRate);
+		customizationPanel.add(InputLocation);
+		customizationPanel.add(SaveNN);
+		customizationPanel.add(LoadNN);
+		customizationPanel.add(TestInput);
+
+		JLabel LearningRateLabel = new JLabel("Learning Rate:");
+		LearningRateLabel.setBounds(20, 20, 100, 20);
+		JLabel TestInputLabel = new JLabel("Test Input:");
+		TestInputLabel.setBounds(20, 510, 100, 20);
+		JLabel InfoLabel = new JLabel(
+				"<html><body style='text-align: center'>For information on how to use this software visit:<br>github.com/Josh194/Ai/wiki</html>");
+		InfoLabel.setBounds(115, 480, 250, 100);
+
+		customizationPanel.add(LearningRateLabel);
+		customizationPanel.add(TestInputLabel);
+		customizationPanel.add(InfoLabel);
+		customizationPanel.add(outputPanelButton);
+		customizationPanel.add(neuronPanelButton);
+
+		outputPanel.setLayout(null);
+		outputPanel.add(customizationPanelButton);
+		outputPanel.add(neuronPanelButton2);
+
+		viewNeuron.setLayout(null);
+		viewNeuron.add(customizationPanelButton2);
+		viewNeuron.add(outputPanelButton2);
+
+		mMenu.setLayout(null);
+		mMenu.add(ExitMenu);
+		mMenu.add(Start);
+
+		canvas.setLayout(null);
+		canvas.add(Exit);
+
+		controlPanel.add(customizationPanel, "customizationPanel");
+		controlPanel.add(outputPanel, "outputPanel");
+		controlPanel.add(viewNeuron, "viewNeuron");
+
+		container.add(mMenu);
+		container.add(canvas, new GridBagConstraints(0, 0, 2, 3, 0d, 0d, GridBagConstraints.LINE_START,
+				GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+		container.add(graphPanel, new GridBagConstraints(2, 1, 1, 1, 0d, 0d, GridBagConstraints.LINE_END,
+				GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+		container.add(controlPanel, new GridBagConstraints(2, 2, 1, 1, 0d, 0d, GridBagConstraints.FIRST_LINE_END,
+				GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+
+		canvas.setVisible(false);
+		graphPanel.setVisible(false);
+		controlPanel.setVisible(false);
+
+		Container cp = getContentPane();
+		cp.add(container);
+	}
+
+	public void initMouseListener() {
 		canvas.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent me) {
@@ -208,8 +289,20 @@ public class Run extends JFrame {
 							for (Neuron neuron : layer.neurons) {
 								if (neuron.getLocation().equals(new Point(s.getBounds().getLocation().x + (100 / 2),
 										s.getBounds().getLocation().y + (100 / 2)))) {
-									SelectedNeuronType = neuron.Type;
-									FoundType = true;
+									if (SwingUtilities.isRightMouseButton(me)) {
+										NeuronLayer = neuralNetwork.layers.indexOf(neuron.getLayer());
+										SelectedNeuronType = neuron.Type;
+
+										shapes.clear();
+										Drawing.Added = false;
+
+										NeuronMenu neuronMenu = new NeuronMenu();
+										neuronMenu.show(me.getComponent(), me.getX(), me.getY());
+										FoundType = true;
+									} else {
+										SelectedNeuronType = neuron.Type;
+										FoundType = true;
+									}
 								}
 							}
 						}
@@ -239,13 +332,9 @@ public class Run extends JFrame {
 				distanceToLine = 10000d;
 			}
 		});
+	}
 
-		try {
-			ExitMenu.setIcon(new ImageIcon(ImageIO.read(new File("src/images/exit.png"))));
-			Exit.setIcon(new ImageIcon(ImageIO.read(new File("src/images/exit.png"))));
-		} catch (Exception ex) {
-			System.out.println(ex);
-		}
+	public void initActionListeners() {
 
 		ExitMenu.addActionListener(new ActionListener() {
 			@Override
@@ -273,6 +362,14 @@ public class Run extends JFrame {
 				canvas.setVisible(true);
 				graphPanel.setVisible(true);
 				controlPanel.setVisible(true);
+				Drawing.startAnimation();
+			}
+		});
+
+		ChooseActivation.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				AF = ChooseActivation.getSelectedIndex();
 			}
 		});
 
@@ -325,37 +422,14 @@ public class Run extends JFrame {
 			}
 		});
 
-		SetNN.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (!CustomNeurons.getText().equals("") && !CustomBias.getText().equals("")
-						&& !LearningRate.getText().equals("")) {
-					shapes.clear();
-					Drawing.Added = false;
-					Drawing.animationX = -5d;
-					Drawing.animation = new Timer();
-					Drawing.startAnimation();
-
-					NeuronComposition = Arrays.stream(
-							CustomNeurons.getText().substring(1, CustomNeurons.getText().length() - 1).split(","))
-							.map(String::trim).mapToInt(Integer::parseInt).toArray();
-					BiasComposition = Arrays
-							.stream(CustomBias.getText().substring(1, CustomBias.getText().length() - 1).split(","))
-							.map(String::trim).mapToInt(Integer::parseInt).toArray();
-					neuralNetwork = new NeuralNetwork(NeuronComposition, BiasComposition,
-							Double.parseDouble(LearningRate.getText()));
-					neuralNetwork.setMinRange(MinRange);
-					neuralNetwork.setMaxRange(MaxRange);
-				}
-			}
-		});
-
 		InputLocation.addActionListener(new ActionListener() {
 
 			JFileChooser fileChooser = new JFileChooser();
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
+
+				Input = new Double[neuralNetwork.layers.get(0).neurons.size() + 1];
 
 				fileChooser.setFileFilter((new FileNameExtensionFilter("text files (*.txt)", "txt")));
 				int returnVal = fileChooser.showOpenDialog(fileChooser);
@@ -487,106 +561,37 @@ public class Run extends JFrame {
 			}
 		});
 
+		Action LearningRateChange = new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				neuralNetwork.TeachingRate = Double.parseDouble(LearningRate.getText());
+			}
+		};
+
+		Action TestInputAction = new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+
+				for (Layer layer : neuralNetwork.layers) {
+					for (Neuron neuron : layer.neurons) {
+						if (neuron.Type != 4) {
+							neuron.setError(0.0);
+							neuron.setValue(0.0);
+						}
+					}
+				}
+
+				List<Double> Input = DoubleStream
+						.of(Arrays.stream(TestInput.getText().substring(1, TestInput.getText().length() - 1).split(","))
+								.map(String::trim).mapToDouble(Double::parseDouble).toArray())
+						.boxed().collect(Collectors.toList());
+				neuralNetwork.setInput(new ArrayList<Double>(Input));
+				neuralNetwork.feedForward();
+			}
+		};
+
 		LearningRate.addActionListener(LearningRateChange);
 		TestInput.addActionListener(TestInputAction);
-
-		CustomBias.setBounds(20, 140, 100, 20);
-		CustomNeurons.setBounds(20, 100, 100, 20);
-		LearningRate.setBounds(20, 40, 100, 20);
-		Pause.setBounds(360, 530, 100, 20);
-		TestInput.setBounds(20, 260, 100, 20);
-		customizationPanelButton.setBounds(CONTROL_WIDTH - 140, 20, 120, 25);
-		outputPanelButton.setBounds(CONTROL_WIDTH - 140, 20, 120, 25);
-		neuronPanelButton.setBounds(CONTROL_WIDTH - 140, 55, 120, 25);
-		customizationPanelButton2.setBounds(CONTROL_WIDTH - 140, 20, 120, 25);
-		outputPanelButton2.setBounds(CONTROL_WIDTH - 140, 60, 120, 25);
-		neuronPanelButton2.setBounds(CONTROL_WIDTH - 140, 55, 120, 25);
-		SetNN.setBounds(20, 530, 100, 20);
-		InputLocation.setBounds(20, 180, 100, 20);
-		SaveNN.setBounds(CONTROL_WIDTH - 140, 250, 120, 20);
-		LoadNN.setBounds(CONTROL_WIDTH - 140, 290, 120, 20);
-		ExitMenu.setBounds(20, 20, 43, 43);
-		Exit.setBounds(20, 20, 43, 43);
-		Start.setBounds((screenSize.width / 2) - 50, 900, 100, 20);
-
-		ExitMenu.setOpaque(false);
-		ExitMenu.setContentAreaFilled(false);
-		ExitMenu.setBorderPainted(false);
-		Exit.setOpaque(false);
-		Exit.setContentAreaFilled(false);
-		Exit.setBorderPainted(false);
-
-		customizationPanel.setLayout(null);
-		customizationPanel.add(Pause);
-		customizationPanel.add(LearningRate);
-		customizationPanel.add(CustomNeurons);
-		customizationPanel.add(CustomBias);
-		customizationPanel.add(SetNN);
-		customizationPanel.add(InputLocation);
-		customizationPanel.add(SaveNN);
-		customizationPanel.add(LoadNN);
-		customizationPanel.add(TestInput);
-
-		JLabel LearningRateLabel = new JLabel("Learning Rate:");
-		LearningRateLabel.setBounds(20, 20, 100, 20);
-		JLabel CustomNeuronsLabel = new JLabel("Neuron Layout:");
-		CustomNeuronsLabel.setBounds(20, 80, 100, 20);
-		JLabel CustomBiasLabel = new JLabel("Bias Layout:");
-		CustomBiasLabel.setBounds(20, 120, 100, 20);
-		JLabel TestInputLabel = new JLabel("Test Input:");
-		TestInputLabel.setBounds(20, 240, 100, 20);
-		JLabel InfoLabel = new JLabel(
-				"<html><body style='text-align: center'>For information on how to use this software visit:<br>github.com/Josh194/Ai/wiki</html>");
-		InfoLabel.setBounds(115, 480, 250, 100);
-
-		customizationPanel.add(LearningRateLabel);
-		customizationPanel.add(CustomNeuronsLabel);
-		customizationPanel.add(CustomBiasLabel);
-		customizationPanel.add(TestInputLabel);
-		customizationPanel.add(InfoLabel);
-		customizationPanel.add(outputPanelButton);
-		customizationPanel.add(neuronPanelButton);
-
-		outputPanel.setLayout(null);
-		outputPanel.add(customizationPanelButton);
-		outputPanel.add(neuronPanelButton2);
-
-		viewNeuron.setLayout(null);
-		viewNeuron.add(customizationPanelButton2);
-		viewNeuron.add(outputPanelButton2);
-
-		mMenu.setLayout(null);
-		mMenu.add(ExitMenu);
-		mMenu.add(Start);
-
-		canvas.setLayout(null);
-		canvas.add(Exit);
-
-		controlPanel.add(customizationPanel, "customizationPanel");
-		controlPanel.add(outputPanel, "outputPanel");
-		controlPanel.add(viewNeuron, "viewNeuron");
-
-		container.add(mMenu);
-		container.add(canvas, new GridBagConstraints(0, 0, 2, 3, 0d, 0d, GridBagConstraints.LINE_START,
-				GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
-		container.add(graphPanel, new GridBagConstraints(2, 1, 1, 1, 0d, 0d, GridBagConstraints.LINE_END,
-				GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
-		container.add(controlPanel, new GridBagConstraints(2, 2, 1, 1, 0d, 0d, GridBagConstraints.FIRST_LINE_END,
-				GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
-
-		canvas.setVisible(false);
-		graphPanel.setVisible(false);
-		controlPanel.setVisible(false);
-
-		Container cp = getContentPane();
-		cp.add(container);
-
-		setTitle("Sensus Ai 1.2.0");
-		setSize(CANVAS_WIDTH + 480, CANVAS_HEIGHT);
-		setDefaultCloseOperation(EXIT_ON_CLOSE);
-		setUndecorated(true);
-		setResizable(false);
-		setVisible(true);
 	}
 
 	private double shortestDistance(Point2D a, Point2D b, Point2D p) {
@@ -663,13 +668,16 @@ public class Run extends JFrame {
 			for (Connection connection : neuralNetwork.connections) {
 				Drawing.drawLine(g2, (int) connection.N1.getLocation().getX(), (int) connection.N1.getLocation().getY(),
 						(int) connection.N2.getLocation().getX(), (int) connection.N2.getLocation().getY(),
-						(int) (connection.getValue() * 5), connection.getColor());
+						(int) (connection.getValue() * 5),
+						(-2 * neuralNetwork.layers.indexOf(connection.N1.getLayer())) - connection.RandomAnimOffset,
+						connection.getColor());
 			}
 
 			for (Layer layer : neuralNetwork.layers) {
 				for (Neuron neuron : layer.neurons) {
 					g2.setColor(neuron.getColor());
-					Drawing.drawCircle(g2, neuron.getLocation().x, neuron.getLocation().y, 100);
+					Drawing.drawCircle(g2, neuron.getLocation().x, neuron.getLocation().y, 100,
+							-2 * neuralNetwork.layers.indexOf(neuron.getLayer()));
 					g2.setColor(new Color(0, 0, 0));
 					Drawing.drawText(g2,
 							new Rectangle(neuron.getLocation().x - 50, neuron.getLocation().y - 50, 100, 100),
@@ -736,7 +744,8 @@ public class Run extends JFrame {
 			g2.setColor(Color.WHITE);
 			g2.drawLine(20, OUTPUT_HEIGHT + 20, OUTPUT_WIDTH + 20, OUTPUT_HEIGHT + 20);
 			g2.drawLine(20, OUTPUT_HEIGHT + 20, 20, 20);
-			int ZeroHeight = 20 + (int) (((0-neuralNetwork.getMinRange())/(neuralNetwork.getMaxRange()-neuralNetwork.getMinRange()))*OUTPUT_HEIGHT);
+			int ZeroHeight = 20 + (int) (((0 - neuralNetwork.getMinRange())
+					/ (neuralNetwork.getMaxRange() - neuralNetwork.getMinRange())) * OUTPUT_HEIGHT);
 			g2.drawLine(20, OUTPUT_HEIGHT - ZeroHeight + 40, OUTPUT_WIDTH + 20, OUTPUT_HEIGHT - ZeroHeight + 40);
 
 			Drawing.updateOutput(g2);
@@ -805,6 +814,193 @@ public class Run extends JFrame {
 			g2.drawRect(10, 10, NEURON_INFO_WIDTH - 20, NEURON_INFO_HEIGHT - 20);
 
 			repaint();
+		}
+	}
+
+	private class NeuronMenu extends JPopupMenu {
+		JMenuItem SimpleN;
+		JMenuItem BiasN;
+		JMenuItem InputN;
+		JMenuItem OutputN;
+		JMenuItem RemoveN;
+		JMenuItem AddL;
+		JMenuItem RemoveL;
+
+		public NeuronMenu() {
+			SimpleN = new JMenuItem("Add Hidden Neuron");
+			BiasN = new JMenuItem("Add Bias Neuron");
+			InputN = new JMenuItem("Add Input Neuron");
+			OutputN = new JMenuItem("Add Output Neuron");
+			RemoveN = new JMenuItem("Remove Neuron");
+			AddL = new JMenuItem("Add Layer");
+			RemoveL = new JMenuItem("Remove Layer");
+
+			add(SimpleN);
+			add(BiasN);
+			add(InputN);
+			add(OutputN);
+			add(RemoveN);
+			add(AddL);
+			add(RemoveL);
+
+			SimpleN.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					NeuronComposition[NeuronLayer] = NeuronComposition[NeuronLayer] + 1;
+
+					shapes.clear();
+					Drawing.Added = false;
+					Drawing.animationX = -5d;
+					Drawing.animation = new Timer();
+					Drawing.startAnimation();
+
+					neuralNetwork = new NeuralNetwork(NeuronComposition, BiasComposition, neuralNetwork.TeachingRate);
+				}
+			});
+
+			BiasN.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					BiasComposition[NeuronLayer] = BiasComposition[NeuronLayer] + 1;
+
+					shapes.clear();
+					Drawing.Added = false;
+					Drawing.animationX = -5d;
+					Drawing.animation = new Timer();
+					Drawing.startAnimation();
+
+					neuralNetwork = new NeuralNetwork(NeuronComposition, BiasComposition, neuralNetwork.TeachingRate);
+				}
+			});
+
+			InputN.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					NeuronComposition[NeuronLayer] = NeuronComposition[NeuronLayer] + 1;
+
+					shapes.clear();
+					Drawing.Added = false;
+					Drawing.animationX = -5d;
+					Drawing.animation = new Timer();
+					Drawing.startAnimation();
+
+					neuralNetwork = new NeuralNetwork(NeuronComposition, BiasComposition, neuralNetwork.TeachingRate);
+				}
+			});
+
+			OutputN.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					BiasComposition[NeuronLayer] = BiasComposition[NeuronLayer] + 1;
+
+					shapes.clear();
+					Drawing.Added = false;
+					Drawing.animationX = -5d;
+					Drawing.animation = new Timer();
+					Drawing.startAnimation();
+
+					neuralNetwork = new NeuralNetwork(NeuronComposition, BiasComposition, neuralNetwork.TeachingRate);
+				}
+			});
+
+			RemoveN.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					switch (SelectedNeuronType) {
+					case 1:
+						NeuronComposition[NeuronLayer] = NeuronComposition[NeuronLayer] - 1;
+						break;
+					case 2:
+						NeuronComposition[NeuronLayer] = NeuronComposition[NeuronLayer] - 1;
+						break;
+					case 3:
+						NeuronComposition[NeuronLayer] = NeuronComposition[NeuronLayer] - 1;
+						break;
+					case 4:
+						BiasComposition[NeuronLayer] = BiasComposition[NeuronLayer] - 1;
+						break;
+					}
+
+					shapes.clear();
+					Drawing.Added = false;
+					Drawing.animationX = -5d;
+					Drawing.animation = new Timer();
+					Drawing.startAnimation();
+
+					neuralNetwork = new NeuralNetwork(NeuronComposition, BiasComposition, neuralNetwork.TeachingRate);
+				}
+			});
+
+			AddL.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+
+					int[] temp = new int[NeuronComposition.length];
+
+					for (int i = 0; i < NeuronComposition.length; i++) {
+						if (i == NeuronLayer) {
+							temp[i] = 1;
+						} else if (i < NeuronLayer) {
+							temp[i] = NeuronComposition[i];
+						} else if (i > NeuronLayer) {
+							temp[i] = NeuronComposition[i - 1];
+						}
+					}
+
+					NeuronComposition = temp;
+					temp = new int[BiasComposition.length];
+
+					for (int i = 0; i < BiasComposition.length; i++) {
+						if (i == NeuronLayer) {
+							temp[i] = 0;
+						} else if (i < NeuronLayer) {
+							temp[i] = BiasComposition[i];
+						} else if (i > NeuronLayer) {
+							temp[i] = BiasComposition[i - 1];
+						}
+					}
+
+					BiasComposition = temp;
+
+					shapes.clear();
+					Drawing.Added = false;
+					Drawing.animationX = -5d;
+					Drawing.animation = new Timer();
+					Drawing.startAnimation();
+
+					neuralNetwork = new NeuralNetwork(NeuronComposition, BiasComposition, neuralNetwork.TeachingRate);
+				}
+			});
+
+			RemoveL.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+
+					int[] temp = new int[NeuronComposition.length - 1];
+
+					for (int i = 0; i < NeuronComposition.length - 1; i++) {
+						if (i < NeuronLayer) {
+							temp[i] = NeuronComposition[i];
+						} else if (i >= NeuronLayer) {
+							temp[i] = NeuronComposition[i + 1];
+						}
+					}
+
+					NeuronComposition = temp;
+					temp = new int[BiasComposition.length - 1];
+
+					for (int i = 0; i < BiasComposition.length - 1; i++) {
+						if (i < NeuronLayer) {
+							temp[i] = BiasComposition[i];
+						} else if (i >= NeuronLayer) {
+							temp[i] = BiasComposition[i + 1];
+						}
+					}
+
+					BiasComposition = temp;
+
+					shapes.clear();
+					Drawing.Added = false;
+					Drawing.animationX = -5d;
+					Drawing.animation = new Timer();
+					Drawing.startAnimation();
+
+					neuralNetwork = new NeuralNetwork(NeuronComposition, BiasComposition, neuralNetwork.TeachingRate);
+				}
+			});
 		}
 	}
 
