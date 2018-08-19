@@ -199,7 +199,7 @@ public class Run extends JFrame {
 		LoadNN.setBounds(CONTROL_WIDTH - 140, 290, 120, 20);
 		ExitMenu.setBounds(20, 20, 43, 43);
 		Exit.setBounds(20, 20, 43, 43);
-		Start.setBounds((screenSize.width / 2) - 50, 900, 100, 20);
+		Start.setBounds((screenSize.width / 2) - 50, (int) (0.87 * screenSize.height), 100, 20);
 
 		ExitMenu.setOpaque(false);
 		ExitMenu.setContentAreaFilled(false);
