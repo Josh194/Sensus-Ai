@@ -9,7 +9,7 @@ import Graphics.Drawing;
 import main.NN.AFHandler;
 import main.NN.Connection;
 import main.NN.Layer;
-import main.NN.Neuron;
+import main.NN.Neurons.Neuron;
 
 public class NeuralNetwork {
 

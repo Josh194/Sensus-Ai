@@ -2,6 +2,8 @@ package main.NN;
 
 import java.awt.Color;
 
+import main.NN.Neurons.Neuron;
+
 public class Connection {
 
 	Double Value;

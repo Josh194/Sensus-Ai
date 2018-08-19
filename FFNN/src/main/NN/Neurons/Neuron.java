@@ -1,10 +1,11 @@
-package main.NN;
+package main.NN.Neurons;
 
 import java.awt.Color;
 import java.awt.Point;
 
 import main.Run;
 import main.NN.AFHandler;
+import main.NN.Layer;
 
 public class Neuron {
 
