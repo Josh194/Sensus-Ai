@@ -63,7 +63,7 @@ import org.xml.sax.SAXException;
 import Graphics.Drawing;
 import main.NN.Connection;
 import main.NN.Layer;
-import main.NN.Neuron;
+import main.NN.Neurons.Neuron;
 
 @SuppressWarnings("serial")
 public class Run extends JFrame {
@@ -929,12 +929,12 @@ public class Run extends JFrame {
 			AddL.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 
-					int[] temp = new int[NeuronComposition.length];
+					int[] temp = new int[NeuronComposition.length + 1];
 
-					for (int i = 0; i < NeuronComposition.length; i++) {
-						if (i == NeuronLayer) {
+					for (int i = 0; i < NeuronComposition.length + 1; i++) {
+						if (i == NeuronLayer + 1) {
 							temp[i] = 1;
-						} else if (i < NeuronLayer) {
+						} else if (i <= NeuronLayer) {
 							temp[i] = NeuronComposition[i];
 						} else if (i > NeuronLayer) {
 							temp[i] = NeuronComposition[i - 1];
@@ -942,12 +942,12 @@ public class Run extends JFrame {
 					}
 
 					NeuronComposition = temp;
-					temp = new int[BiasComposition.length];
+					temp = new int[BiasComposition.length + 1];
 
-					for (int i = 0; i < BiasComposition.length; i++) {
-						if (i == NeuronLayer) {
+					for (int i = 0; i < BiasComposition.length + 1; i++) {
+						if (i == NeuronLayer + 1) {
 							temp[i] = 0;
-						} else if (i < NeuronLayer) {
+						} else if (i <= NeuronLayer) {
 							temp[i] = BiasComposition[i];
 						} else if (i > NeuronLayer) {
 							temp[i] = BiasComposition[i - 1];
