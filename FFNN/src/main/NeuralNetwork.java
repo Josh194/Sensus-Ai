@@ -53,7 +53,6 @@ public class NeuralNetwork {
 				}
 			} else if (layers.indexOf(layer) == (layers.size() - 1)) {
 				for (int i = 0; i < NeuralNetworkComposition[layers.indexOf(layer)]; i++) {
-					System.out.println("hi");
 					layer.addNeuron(new Neuron(0d, layer, 3, OutputColor));
 					for (Neuron neuron : layers.get(layers.indexOf(layer) - 1).neurons) {
 						connections.add(new Connection(1d, neuron, layer.neurons.get(i), new Color(0, 0, 0)));
