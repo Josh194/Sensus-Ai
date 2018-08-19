@@ -2,12 +2,15 @@ package main.NN;
 
 import java.awt.Color;
 
+import main.NN.Neurons.Neuron;
+
 public class Connection {
 
 	Double Value;
 	public Neuron N1;
 	public Neuron N2;
 	Color Color;
+	public Double RandomAnimOffset = Math.random();
 
 	public Connection(Double value, Neuron n1, Neuron n2, Color color) {
 		Value = value;
