@@ -5,10 +5,11 @@ Version: 1.2.0
 
 New:
 
-Gui for adding neurons. (WIP)
+Gui for adding neurons.
 Choose Activation Function
 Revamped Start Animation
 
 Bugs:
 
 It is impossible to add an output neuron, but you can remove one.
+There are scaling issues where some users cannot see anything on running the program.
