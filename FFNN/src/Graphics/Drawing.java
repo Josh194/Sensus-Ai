@@ -15,11 +15,15 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import main.Run;
+import main.util.PolyLineSimplification;
+import main.util.Vector2D;
 
 public class Drawing {
 
-	public static ArrayList<Double> graphPoints = new ArrayList<Double>();
+	public static ArrayList<Vector2D> graphPoints = new ArrayList<Vector2D>();
 	public static ArrayList<Double> outputPoints = new ArrayList<Double>();
+	public static PolyLineSimplification simplify = new PolyLineSimplification(0.2);
+	public static int pointNumber = 0;
 	public static Dimension graphSize;
 	public static Point graphLocation;
 	public static Dimension outputSize;
@@ -45,16 +49,23 @@ public class Drawing {
 
 	public static void update(Graphics2D g2) {
 
-		for (Double point : graphPoints) {
+		for (Vector2D point : graphPoints) {
 			g2.setColor(Color.BLACK);
-			g2.fillOval(graphLocation.x + ((graphSize.width / graphPoints.size()) * graphPoints.indexOf(point)),
-					graphLocation.y - (int) (Math.abs(point) * (graphLocation.y / Run.neuralNetwork.getMaxRange()))
-							+ 15,
-					5, 5);
+			drawOutput(g2, (int) ((graphSize.width * point.x) / pointNumber) + 20, (graphLocation.y + 20)
+					- (int) (Math.abs(point.y) * (graphLocation.y / Run.neuralNetwork.getMaxRange())), 5);
 		}
 
-		if (graphPoints.size() > 30) {
-			graphPoints.remove(0);
+		for (int i = 1; i < graphPoints.size(); i++) {
+			g2.drawLine((int) (((graphSize.width * graphPoints.get(i - 1).x) / pointNumber) + 20),
+					(graphLocation.y + 20) - (int) (Math.abs((graphPoints.get(i - 1)).y)
+							* (graphLocation.y / Run.neuralNetwork.getMaxRange())),
+					(int) (((graphSize.width * graphPoints.get(i).x) / pointNumber) + 20),
+					(graphLocation.y + 20) - (int) (Math.abs((graphPoints.get(i)).y)
+							* (graphLocation.y / Run.neuralNetwork.getMaxRange())));
+		}
+
+		if (graphPoints.size() > 100) {
+			graphPoints = simplify.filter(graphPoints);
 		}
 	}
 
@@ -88,6 +99,15 @@ public class Drawing {
 		temp = 1 - (1 / ((0.5 * (-2 + Math.sqrt(12))) + (Math.min(Math.max(animationX + timeOffset, 0), 2))))
 				+ (1 / ((0.5 * (-2 + Math.sqrt(12))) + 2));
 		return temp;
+	}
+
+	public static void drawOutput(Graphics2D g2, int x, int y, int r) {
+		// Combine with drawCircle()!
+
+		x = x - (r / 2);
+		y = y - (r / 2);
+
+		g2.fill(new Ellipse2D.Double(x, y, r, r));
 	}
 
 	public static void drawCircle(Graphics2D g2, int x, int y, int r, double timeOffset) {
