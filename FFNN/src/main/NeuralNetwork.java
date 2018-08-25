@@ -10,6 +10,7 @@ import main.NN.AFHandler;
 import main.NN.Connection;
 import main.NN.Layer;
 import main.NN.Neurons.Neuron;
+import main.util.Vector2D;
 
 public class NeuralNetwork {
 
@@ -28,6 +29,7 @@ public class NeuralNetwork {
 	private Double MaxRange = 1d;
 	private static int NX;
 	private static int NY;
+	private static int PointX = 0;
 
 	public NeuralNetwork(int[] NeuralNetworkComposition, int[] NeuralNetworkBiasComposition, Double teachingRate) {
 		connections.clear();
@@ -135,8 +137,13 @@ public class NeuralNetwork {
 			sum = sum + Math.pow(
 					(neuron.getValue() - TargetOutput.get(layers.get(layers.size() - 1).neurons.indexOf(neuron))), 2);
 		}
-		Drawing.graphPoints.add(sum / layers.get(layers.size() - 1).neurons.size());
+		
+		Drawing.graphPoints.add(new Vector2D(PointX,
+				sum / layers.get(layers.size() - 1).neurons.size()));
 		Drawing.outputPoints.add(Output);
+		
+		PointX++;
+		Drawing.pointNumber++;
 
 		Collections.reverse(connections);
 		for (Connection connection : connections) {
