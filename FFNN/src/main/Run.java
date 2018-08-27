@@ -148,17 +148,17 @@ public class Run extends JFrame {
 	private void initGui() {
 
 		try {
-			BasicNeuronImage = ImageIO.read(new File("src/Graphics/Simple_Neuron.png"));
-			BiasNeuronImage = ImageIO.read(new File("src/Graphics/Bias_Neuron.png"));
-			InputNeuronImage = ImageIO.read(new File("src/Graphics/Input_Neuron.png"));
-			OutputNeuronImage = ImageIO.read(new File("src/Graphics/Output_Neuron.png"));
+			BasicNeuronImage = ImageIO.read(getClass().getResourceAsStream("/Graphics/Simple_Neuron.png"));
+			BiasNeuronImage = ImageIO.read(getClass().getResourceAsStream("/Graphics/Bias_Neuron.png"));
+			InputNeuronImage = ImageIO.read(getClass().getResourceAsStream("/Graphics/Input_Neuron.png"));
+			OutputNeuronImage = ImageIO.read(getClass().getResourceAsStream("/Graphics/Output_Neuron.png"));
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
 
 		try {
-			ExitMenu.setIcon(new ImageIcon(ImageIO.read(new File("src/images/exit.png"))));
-			Exit.setIcon(new ImageIcon(ImageIO.read(new File("src/images/exit.png"))));
+			ExitMenu.setIcon(new ImageIcon(getClass().getResource("/images/exit.png")));
+			Exit.setIcon(new ImageIcon(getClass().getResource("/images/exit.png")));
 		} catch (Exception ex) {
 			System.out.println(ex);
 		}
