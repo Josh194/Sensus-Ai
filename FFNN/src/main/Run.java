@@ -630,7 +630,15 @@ public class Run extends JFrame {
 				if (InputLine == InputLines) {
 					InputLine = 0;
 				} else {
-					InputLine++;
+					if (InputLine % neuralNetwork.layers.get(0).neurons.size() - BiasComposition[0] == 0) {
+						if (InputLine!=0) {
+							InputLine += neuralNetwork.layers.get(neuralNetwork.layers.size()-1).neurons.size();
+						} else {
+							InputLine++;
+						}
+					} else {
+						InputLine++;
+					}
 				}
 			} catch (NumberFormatException e) {
 				e.printStackTrace();
@@ -645,7 +653,7 @@ public class Run extends JFrame {
 		public void paintComponent(Graphics g) {
 			super.paintComponent(g);
 			setBackground(new Color(0, 66, 103));
-
+			
 			if (Paused == false) {
 				try {
 					InputLines = getLines(InputString);
@@ -887,7 +895,7 @@ public class Run extends JFrame {
 
 			OutputN.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					BiasComposition[NeuronLayer] = BiasComposition[NeuronLayer] + 1;
+					NeuronComposition[NeuronLayer] = NeuronComposition[NeuronLayer] + 1;
 
 					shapes.clear();
 					Drawing.Added = false;
