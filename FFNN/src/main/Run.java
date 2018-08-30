@@ -287,11 +287,11 @@ public class Run extends JFrame {
 					if (s instanceof Ellipse2D && s.contains(me.getPoint())) {
 						for (Layer layer : neuralNetwork.layers) {
 							for (Neuron neuron : layer.neurons) {
-								if (neuron.getLocation().equals(new Point(s.getBounds().getLocation().x + (100 / 2),
-										s.getBounds().getLocation().y + (100 / 2)))) {
+								if (neuron.animationHandler.getLocation().equals(new Point(s.getBounds().getLocation().x + (neuron.animationHandler.getSize() / 2),
+										s.getBounds().getLocation().y + (neuron.animationHandler.getSize() / 2)))) {
 									if (SwingUtilities.isRightMouseButton(me)) {
 										NeuronLayer = neuralNetwork.layers.indexOf(neuron.getLayer());
-										SelectedNeuronType = neuron.Type;
+										SelectedNeuronType = neuron.getType();
 
 										shapes.clear();
 										Drawing.Added = false;
@@ -300,7 +300,7 @@ public class Run extends JFrame {
 										neuronMenu.show(me.getComponent(), me.getX(), me.getY());
 										FoundType = true;
 									} else {
-										SelectedNeuronType = neuron.Type;
+										SelectedNeuronType = neuron.getType();
 										FoundType = true;
 									}
 								}
@@ -310,8 +310,8 @@ public class Run extends JFrame {
 
 					if (distanceToLine < 5 && !FoundType && SwingUtilities.isRightMouseButton(me)) {
 						for (Connection connection : neuralNetwork.connections) {
-							if (connection.N1.getLocation().equals((closestLine.getP1()))
-									&& connection.N2.getLocation().equals((closestLine.getP2()))) {
+							if (connection.N1.animationHandler.getLocation().equals((closestLine.getP1()))
+									&& connection.N2.animationHandler.getLocation().equals((closestLine.getP2()))) {
 								connectionToRemove = connection;
 							}
 						}
@@ -468,7 +468,7 @@ public class Run extends JFrame {
 					int i = 0;
 					for (Layer layer : neuralNetwork.layers) {
 						for (Neuron neuron : layer.neurons) {
-							if (neuron.Type == 4) {
+							if (neuron.getType() == 4) {
 								Bias[i + 1] = 1;
 								i++;
 							} else {
@@ -574,7 +574,7 @@ public class Run extends JFrame {
 
 				for (Layer layer : neuralNetwork.layers) {
 					for (Neuron neuron : layer.neurons) {
-						if (neuron.Type != 4) {
+						if (neuron.getType() != 4) {
 							neuron.setError(0.0);
 							neuron.setValue(0.0);
 						}
@@ -674,8 +674,8 @@ public class Run extends JFrame {
 			g2.drawRect(10, 10, CANVAS_WIDTH - 20, CANVAS_HEIGHT - 20);
 
 			for (Connection connection : neuralNetwork.connections) {
-				Drawing.drawLine(g2, (int) connection.N1.getLocation().getX(), (int) connection.N1.getLocation().getY(),
-						(int) connection.N2.getLocation().getX(), (int) connection.N2.getLocation().getY(),
+				Drawing.drawLine(g2, (int) connection.N1.animationHandler.getLocation().getX(), (int) connection.N1.animationHandler.getLocation().getY(),
+						(int) connection.N2.animationHandler.getLocation().getX(), (int) connection.N2.animationHandler.getLocation().getY(),
 						(int) (connection.getValue() * 5),
 						(-2 * neuralNetwork.layers.indexOf(connection.N1.getLayer())) - connection.RandomAnimOffset,
 						connection.getColor());
@@ -683,12 +683,12 @@ public class Run extends JFrame {
 
 			for (Layer layer : neuralNetwork.layers) {
 				for (Neuron neuron : layer.neurons) {
-					g2.setColor(neuron.getColor());
-					Drawing.drawCircle(g2, neuron.getLocation().x, neuron.getLocation().y, 100,
+					g2.setColor(neuron.animationHandler.getColor());
+					Drawing.drawCircle(g2, neuron.animationHandler.getLocation().x, neuron.animationHandler.getLocation().y, neuron.animationHandler.getSize(),
 							-2 * neuralNetwork.layers.indexOf(neuron.getLayer()));
 					g2.setColor(new Color(0, 0, 0));
 					Drawing.drawText(g2,
-							new Rectangle(neuron.getLocation().x - 50, neuron.getLocation().y - 50, 100, 100),
+							new Rectangle(neuron.animationHandler.getLocation().x - 50, neuron.animationHandler.getLocation().y - 50, 100, 100),
 							Double.toString(((double) Math.round(neuron.getValue() * 100d) / 100d)),
 							new Font("Monaco", 1, 20));
 				}
@@ -705,7 +705,7 @@ public class Run extends JFrame {
 			if (Paused == false) {
 				for (Layer layer : neuralNetwork.layers) {
 					for (Neuron neuron : layer.neurons) {
-						if (neuron.Type != 4) {
+						if (neuron.getType() != 4) {
 							neuron.setError(0.0);
 							neuron.setValue(0.0);
 						}
