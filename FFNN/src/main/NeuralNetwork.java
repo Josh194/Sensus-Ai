@@ -73,7 +73,7 @@ public class NeuralNetwork {
 						layer.addNeuron(new Neuron(0d, layer, 1, HiddenColor));
 					}
 					for (Neuron neuron : layers.get(layers.indexOf(layer) - 1).neurons) {
-						if (layer.neurons.get(i).Type == 1) {
+						if (layer.neurons.get(i).getType() == 1) {
 							connections.add(new Connection(1d, neuron, layer.neurons.get(i), new Color(0, 0, 0)));
 						}
 					}
@@ -83,7 +83,14 @@ public class NeuralNetwork {
 			for (Neuron neuron : layer.neurons) {
 				NX = Run.CANVAS_WIDTH / (layers.size() + 1) * (layers.indexOf(layer) + 1);
 				NY = Run.CANVAS_HEIGHT / (layer.neurons.size() + 1) * (layer.neurons.indexOf(neuron) + 1);
-				neuron.setLocation(new Point(NX, NY));
+				
+				neuron.animationHandler.setLocation(new Point(NX, NY));
+				
+				if (neuron.getLayer().neurons.size() > 8) {
+					neuron.animationHandler.setSize(900 / neuron.getLayer().neurons.size());
+				} else {
+					neuron.animationHandler.setSize(100);
+				}
 			}
 		}
 
@@ -101,7 +108,7 @@ public class NeuralNetwork {
 				Math.max(input.size() - layers.get(layers.size() - 1).neurons.size() - Run.BiasComposition[0], 0),
 				input.size()));
 		for (Neuron neuron : layers.get(0).neurons) {
-			if (neuron.Type != 4) {
+			if (neuron.getType() != 4) {
 				neuron.setValue(input.get(layers.get(0).neurons.indexOf(neuron)));
 			}
 		}
@@ -114,7 +121,7 @@ public class NeuralNetwork {
 
 		for (Layer layer : layers) {
 			for (Neuron neuron : layer.neurons) {
-				if (neuron.getColor() == InputColor) {
+				if (neuron.animationHandler.getColor() == InputColor) {
 
 				} else {
 					neuron.update();
