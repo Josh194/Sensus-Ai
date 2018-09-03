@@ -24,7 +24,11 @@ public class NeuralNetwork {
 	Color OutputColor = new Color(255, 98, 36);
 	Color BiasColor = new Color(255, 153, 248);
 	Double Error;
+	public Double maxError;
+	public Double minError;
 	Double Output;
+	public Double maxOutput;
+	public Double minOutput;
 	private Double MinRange = 0d;
 	private Double MaxRange = 1d;
 	private static int NX;
@@ -145,8 +149,35 @@ public class NeuralNetwork {
 					(neuron.getValue() - TargetOutput.get(layers.get(layers.size() - 1).neurons.indexOf(neuron))), 2);
 		}
 		
+		if (minError == null) {
+			minError = sum / layers.get(layers.size() - 1).neurons.size();
+			maxError = sum / layers.get(layers.size() - 1).neurons.size();
+		}
+		
+		if ((sum / layers.get(layers.size() - 1).neurons.size()) > maxError) {
+			maxError = sum / layers.get(layers.size() - 1).neurons.size();
+		}
+		
+		if ((sum / layers.get(layers.size() - 1).neurons.size()) < minError) {
+			minError = (sum / layers.get(layers.size() - 1).neurons.size());
+		}
+		
 		Drawing.graphPoints.add(new Vector2D(PointX,
 				sum / layers.get(layers.size() - 1).neurons.size()));
+		
+		if (minOutput == null) {
+			minOutput = Output;
+			maxOutput = Output;
+		}
+		
+		if (Output > maxOutput) {
+			maxOutput = Output;
+		}
+		
+		if (Output < minError) {
+			minOutput = Output;
+		}
+		
 		Drawing.outputPoints.add(Output);
 		
 		PointX++;
