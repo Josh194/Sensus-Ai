@@ -752,9 +752,8 @@ public class Run extends JFrame {
 			g2.setColor(Color.WHITE);
 			g2.drawLine(20, OUTPUT_HEIGHT + 20, OUTPUT_WIDTH + 20, OUTPUT_HEIGHT + 20);
 			g2.drawLine(20, OUTPUT_HEIGHT + 20, 20, 20);
-			int ZeroHeight = 20 + (int) (((0 - neuralNetwork.getMinRange())
-					/ (neuralNetwork.getMaxRange() - neuralNetwork.getMinRange())) * OUTPUT_HEIGHT);
-			g2.drawLine(20, OUTPUT_HEIGHT - ZeroHeight + 40, OUTPUT_WIDTH + 20, OUTPUT_HEIGHT - ZeroHeight + 40);
+			int ZeroHeight = (int) ((((-1 * neuralNetwork.minOutput) * OUTPUT_HEIGHT) / (neuralNetwork.maxOutput-neuralNetwork.minOutput)));
+			g2.drawLine(20, (OUTPUT_HEIGHT + 20) - ZeroHeight, OUTPUT_WIDTH + 20, (OUTPUT_HEIGHT + 20) - ZeroHeight);
 
 			Drawing.updateOutput(g2);
 

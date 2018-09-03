@@ -52,16 +52,16 @@ public class Drawing {
 		for (Vector2D point : graphPoints) {
 			g2.setColor(Color.BLACK);
 			drawOutput(g2, (int) ((graphSize.width * point.x) / pointNumber) + 20, (graphLocation.y + 20)
-					- (int) (Math.abs(point.y) * (graphLocation.y / Run.neuralNetwork.getMaxRange())), 5);
+					- (int) (Math.abs(point.y) * (graphLocation.y / (Run.neuralNetwork.maxError-Run.neuralNetwork.minError))), 5);
 		}
 
 		for (int i = 1; i < graphPoints.size(); i++) {
 			g2.drawLine((int) (((graphSize.width * graphPoints.get(i - 1).x) / pointNumber) + 20),
 					(graphLocation.y + 20) - (int) (Math.abs((graphPoints.get(i - 1)).y)
-							* (graphLocation.y / Run.neuralNetwork.getMaxRange())),
+							* (graphLocation.y / (Run.neuralNetwork.maxError-Run.neuralNetwork.minError))),
 					(int) (((graphSize.width * graphPoints.get(i).x) / pointNumber) + 20),
 					(graphLocation.y + 20) - (int) (Math.abs((graphPoints.get(i)).y)
-							* (graphLocation.y / Run.neuralNetwork.getMaxRange())));
+							* (graphLocation.y / (Run.neuralNetwork.maxError-Run.neuralNetwork.minError))));
 		}
 
 		if (graphPoints.size() > 100) {
@@ -73,11 +73,11 @@ public class Drawing {
 
 		for (Double point : outputPoints) {
 			g2.setColor(Color.BLACK);
-			g2.fillOval(outputLocation.x + ((outputSize.width / outputPoints.size()) * outputPoints.indexOf(point)),
-					(int) ((outputLocation.y
-							* (point + Math.abs(Run.neuralNetwork.getMinRange() * Run.neuralNetwork.getMaxRange()) / 2))
-							/ Math.abs(Run.neuralNetwork.getMinRange() + Run.neuralNetwork.getMaxRange())) + 40,
-					5, 5);
+			drawOutput(g2, outputLocation.x + ((outputSize.width / outputPoints.size()) * outputPoints.indexOf(point)),
+					(outputLocation.y + 20)
+					- (int) ((point * (outputLocation.y / (Run.neuralNetwork.maxOutput-Run.neuralNetwork.minOutput)))
+						- ((Run.neuralNetwork.minOutput) * outputLocation.y) / (Run.neuralNetwork.maxOutput-Run.neuralNetwork.minOutput)),
+					5);
 		}
 
 		if (outputPoints.size() > 30) {
