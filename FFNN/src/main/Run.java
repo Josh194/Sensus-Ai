@@ -11,6 +11,7 @@ import java.awt.GraphicsEnvironment;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
@@ -63,7 +64,8 @@ import Graphics.Drawing;
 import main.NN.Connection;
 import main.NN.Layer;
 import main.NN.Neurons.Neuron;
-import main.util.Calculations;
+import main.util.Cast;
+import main.util.Select;
 import main.util.Vector2D;
 
 @SuppressWarnings("serial")
@@ -270,64 +272,48 @@ public class Run extends JFrame {
 	public void initMouseListener() {
 		canvas.addMouseListener(new MouseAdapter() {
 			@Override
-			public void mouseClicked(MouseEvent me) {
-				super.mouseClicked(me);
+			public void mouseClicked(MouseEvent mouseEvent) {
+				super.mouseClicked(mouseEvent);
 
-				Double distanceToLine = 10000d;
-				Line2D closestLine = null;
+				Vector2D mouseLocation = Cast.asVector2D(mouseEvent.getPoint());
+				Shape closestShape = Select.getObjectUnderCursor(mouseLocation, shapes);
 
-				for (Shape s : shapes) {
-					if (s instanceof Line2D && Calculations.distanceToLine(
-							new Vector2D(me.getPoint().getX(), me.getPoint().getY()),
-							new Vector2D(((Line2D) s).getP1().getX(), ((Line2D) s).getP1().getY()),
-							new Vector2D(((Line2D) s).getP2().getX(), ((Line2D) s).getP2().getY())) < distanceToLine) {
-						distanceToLine = Calculations.distanceToLine(
-								new Vector2D(me.getPoint().getX(), me.getPoint().getY()),
-								new Vector2D(((Line2D) s).getP1().getX(), ((Line2D) s).getP1().getY()),
-								new Vector2D(((Line2D) s).getP2().getX(), ((Line2D) s).getP2().getY()));
-						closestLine = ((Line2D) s);
-					}
-				}
-				
-				for (Shape s : shapes) {
-					if (s instanceof Ellipse2D && s.contains(me.getPoint())) {
-						for (Layer layer : neuralNetwork.layers) {
-							for (Neuron neuron : layer.neurons) {
-								if (neuron.animationHandler.getLocation().equals(new Point(
-										s.getBounds().getLocation().x + (neuron.animationHandler.getSize() / 2),
-										s.getBounds().getLocation().y + (neuron.animationHandler.getSize() / 2)))) {
-									if (SwingUtilities.isRightMouseButton(me)) {
-										NeuronLayer = neuralNetwork.layers.indexOf(neuron.getLayer());
-										SelectedNeuronType = neuron.getType();
+				if (Select.isShapeInRange(mouseLocation, closestShape, 10)) {
+					if (closestShape instanceof Ellipse2D) {
+								if (SwingUtilities.isRightMouseButton(mouseEvent)) {
+									shapes.clear();
+									Drawing.Added = false;
 
-										shapes.clear();
-										Drawing.Added = false;
-
-										NeuronMenu neuronMenu = new NeuronMenu();
-										neuronMenu.show(me.getComponent(), me.getX(), me.getY());
-										FoundType = true;
-									} else {
-										SelectedNeuronType = neuron.getType();
-										FoundType = true;
+									NeuronMenu neuronMenu = new NeuronMenu();
+									neuronMenu.show(mouseEvent.getComponent(), mouseEvent.getX(), mouseEvent.getY());
+									FoundType = false;
+								} else {
+									for (Layer layer : neuralNetwork.layers) {
+										for (Neuron neuron : layer.neurons) {
+											Vector2D closestShapeLocation = new Vector2D(((Ellipse2D) closestShape).getCenterX(), ((Ellipse2D) closestShape).getCenterY());
+											
+											if (neuron.animationHandler.getLocation().isEqualTo(closestShapeLocation)) {
+												SelectedNeuronType = neuron.getType();
+												FoundType = true;
+											}
+										}
 									}
 								}
+					} else if (closestShape instanceof Line2D) {
+						if (!FoundType && SwingUtilities.isRightMouseButton(mouseEvent)) {
+							for (Connection connection : neuralNetwork.connections) {
+								Vector2D P1 = connection.N1.animationHandler.getLocation();
+								Vector2D P2 = connection.N2.animationHandler.getLocation();
+								
+								if (P1.isEqualTo(Cast.asVector2D(((Line2D) closestShape).getP1())) && P2.isEqualTo(Cast.asVector2D(((Line2D) closestShape).getP2()))) {
+									connectionToRemove = connection;
+								}
 							}
+							
+							Run.neuralNetwork.connections.remove(connectionToRemove);
+							shapes.remove(closestShape);
 						}
 					}
-
-					if (distanceToLine < 10 && !FoundType && SwingUtilities.isRightMouseButton(me)) {
-						for (Connection connection : neuralNetwork.connections) {
-							if (connection.N1.animationHandler.getLocation().equals((closestLine.getP1()))
-									&& connection.N2.animationHandler.getLocation().equals((closestLine.getP2()))) {
-								connectionToRemove = connection;
-							}
-						}
-					}
-				}
-
-				if (distanceToLine < 5 && !FoundType) {
-					Run.neuralNetwork.connections.remove(connectionToRemove);
-					shapes.remove(closestLine);
 				}
 
 				if (FoundType) {
@@ -335,8 +321,6 @@ public class Run extends JFrame {
 				} else {
 					SelectedNeuronType = 0;
 				}
-
-				distanceToLine = 10000d;
 			}
 		});
 	}
@@ -660,25 +644,50 @@ public class Run extends JFrame {
 			g2.setColor(Color.BLACK);
 			g2.drawRect(10, 10, CANVAS_WIDTH - 20, CANVAS_HEIGHT - 20);
 
+			Point reference = getContentPane().getLocationOnScreen();
+	        int x = MouseInfo.getPointerInfo().getLocation().x-reference.x;
+	        int y = MouseInfo.getPointerInfo().getLocation().y-reference.y; 
+			Vector2D mouseLocation = new Vector2D(x, y);
+			Shape closestShape = Select.getObjectUnderCursor(mouseLocation, shapes);
+			
 			for (Connection connection : neuralNetwork.connections) {
-				Drawing.drawLine(g2, (int) connection.N1.animationHandler.getLocation().getX(),
-						(int) connection.N1.animationHandler.getLocation().getY(),
-						(int) connection.N2.animationHandler.getLocation().getX(),
-						(int) connection.N2.animationHandler.getLocation().getY(), (int) (connection.getValue() * 5),
-						(-2 * neuralNetwork.layers.indexOf(connection.N1.getLayer())) - connection.RandomAnimOffset,
-						connection.getColor());
+				
+				Vector2D P1 = connection.N1.animationHandler.getLocation();
+				Vector2D P2 = connection.N2.animationHandler.getLocation();
+				
+				if (Select.isShapeInRange(mouseLocation, closestShape, 10) && closestShape instanceof Line2D
+						&& P1.isEqualTo(Cast.asVector2D(((Line2D) closestShape).getP1()))
+						&& P2.isEqualTo(Cast.asVector2D(((Line2D) closestShape).getP2()))) {
+					Drawing.drawLine(g2,
+							(int) connection.N1.animationHandler.getLocation().x,
+							(int) connection.N1.animationHandler.getLocation().y,
+							(int) connection.N2.animationHandler.getLocation().x,
+							(int) connection.N2.animationHandler.getLocation().y,
+							(int) (connection.getValue() * 5),
+							(-2 * neuralNetwork.layers.indexOf(connection.N1.getLayer())) - connection.RandomAnimOffset,
+							Color.black);
+				} else {
+					Drawing.drawLine(g2,
+							(int) connection.N1.animationHandler.getLocation().x,
+							(int) connection.N1.animationHandler.getLocation().y,
+							(int) connection.N2.animationHandler.getLocation().x,
+							(int) connection.N2.animationHandler.getLocation().y,
+							(int) (connection.getValue() * 5),
+							(-2 * neuralNetwork.layers.indexOf(connection.N1.getLayer())) - connection.RandomAnimOffset,
+							connection.getColor());
+				}
 			}
 
 			for (Layer layer : neuralNetwork.layers) {
 				for (Neuron neuron : layer.neurons) {
 					g2.setColor(neuron.animationHandler.getColor());
-					Drawing.drawCircle(g2, neuron.animationHandler.getLocation().x,
-							neuron.animationHandler.getLocation().y, neuron.animationHandler.getSize(),
+					Drawing.drawCircle(g2, (int) neuron.animationHandler.getLocation().x,
+							(int) neuron.animationHandler.getLocation().y, (int) neuron.animationHandler.getSize(),
 							-2 * neuralNetwork.layers.indexOf(neuron.getLayer()));
 					g2.setColor(new Color(0, 0, 0));
 					Drawing.drawText(g2,
-							new Rectangle(neuron.animationHandler.getLocation().x - 50,
-									neuron.animationHandler.getLocation().y - 50, 100, 100),
+							new Rectangle((int) neuron.animationHandler.getLocation().x - 50,
+									(int) neuron.animationHandler.getLocation().y - 50, 100, 100),
 							Double.toString(((double) Math.round(neuron.getValue() * 100d) / 100d)),
 							new Font("Monaco", 1, 20));
 				}

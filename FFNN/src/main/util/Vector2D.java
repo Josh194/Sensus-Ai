@@ -12,8 +12,16 @@ public class Vector2D {
 		this.y = y;
 	}
 	
-	public Point toPoint(Vector2D point) {
-		return new Point((int) point.x, (int) point.y);
+	public Point toPoint() {
+		return new Point((int) x, (int) y);
+	}
+	
+	public boolean isEqualTo(Vector2D point) {
+		if (point.x == x && point.y == y) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 }

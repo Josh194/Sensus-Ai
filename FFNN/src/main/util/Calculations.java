@@ -24,4 +24,11 @@ public class Calculations {
 		return Math.sqrt(Math.pow(firstPoint.x - secondPoint.x, 2) + Math.pow(firstPoint.y - secondPoint.y, 2));
 	}
 	
+	public static Vector2D getCircleCenter(Vector2D location, double size) {
+		double x = location.x + (size / 2);
+		double y = location.y + (size / 2);
+		
+		return new Vector2D(x, y);
+	}
+	
 }

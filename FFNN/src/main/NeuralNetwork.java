@@ -1,7 +1,6 @@
 package main;
 
 import java.awt.Color;
-import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -88,7 +87,7 @@ public class NeuralNetwork {
 				NX = Run.CANVAS_WIDTH / (layers.size() + 1) * (layers.indexOf(layer) + 1);
 				NY = Run.CANVAS_HEIGHT / (layer.neurons.size() + 1) * (layer.neurons.indexOf(neuron) + 1);
 				
-				neuron.animationHandler.setLocation(new Point(NX, NY));
+				neuron.animationHandler.setLocation(new Vector2D(NX, NY));
 				
 				if (neuron.getLayer().neurons.size() > 8) {
 					neuron.animationHandler.setSize(900 / neuron.getLayer().neurons.size());

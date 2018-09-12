@@ -1,25 +1,26 @@
 package main.NN.Neurons;
 
 import java.awt.Color;
-import java.awt.Point;
+
+import main.util.Vector2D;
 
 public class NeuronAnimationHandler {
 	
-	private Point location;
+	private Vector2D location;
 	private Integer size;
 	private Color color;
 	
-	public NeuronAnimationHandler(Point location, Integer size, Color color) {
-		this.location =location;
+	public NeuronAnimationHandler(Vector2D location, Integer size, Color color) {
+		this.location = location;
 		this	.size = size;
 		this.color = color;
 	}
 
-	public Point getLocation() {
+	public Vector2D getLocation() {
 		return location;
 	}
 
-	public void setLocation(Point location) {
+	public void setLocation(Vector2D location) {
 		this.location = location;
 	}
 
