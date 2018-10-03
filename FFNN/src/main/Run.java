@@ -281,6 +281,14 @@ public class Run extends JFrame {
 				if (Select.isShapeInRange(mouseLocation, closestShape, 10)) {
 					if (closestShape instanceof Ellipse2D) {
 								if (SwingUtilities.isRightMouseButton(mouseEvent)) {
+									for (Layer layer : neuralNetwork.layers) {
+										for (Neuron neuron : layer.neurons) {
+											if (neuron.animationHandler.getLocation().isEqualTo(new Vector2D(closestShape.getBounds().getCenterX(), closestShape.getBounds().getCenterY()))) {
+												NeuronLayer = neuralNetwork.layers.indexOf(neuron.getLayer());
+											}
+										}
+									}
+									
 									shapes.clear();
 									Drawing.Added = false;
 
