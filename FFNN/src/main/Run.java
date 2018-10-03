@@ -1024,18 +1024,6 @@ public class Run extends JFrame {
 	}
 
 	public static void main(String[] args) {
-
-		BufferedImage img = null;
-		try {
-			img = ImageIO.read(new File("/Users/admin/Downloads/Unknown-7.jpg"));
-		} catch (IOException e) {
-			
-		}
-		Convolution temp = new Convolution();
-
-		temp.loadImage(img);
-		System.out.println(temp.getNeurons());
-
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
