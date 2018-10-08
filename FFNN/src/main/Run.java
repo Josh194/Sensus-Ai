@@ -707,12 +707,6 @@ public class Run extends JFrame {
 
 			Drawing.Added = true;
 
-			try {
-				Thread.sleep(50);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-
 			if (Paused == false) {
 				for (Layer layer : neuralNetwork.layers) {
 					for (Neuron neuron : layer.neurons) {
