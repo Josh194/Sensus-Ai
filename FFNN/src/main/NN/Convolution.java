@@ -15,7 +15,6 @@ public class Convolution {
 	}
 	
 	public void loadImage(BufferedImage imageToLoad) {
-		
 		BufferedImage image = convertToGrayScale(imageToLoad);
 		
 		byte[] pixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
@@ -41,7 +40,11 @@ public class Convolution {
 		  g.drawImage(image, 0, 0, null);
 		  g.dispose();
 		  return result;
-		}
+	}
+	
+	public static Matrix doConvolution() {
+		return new Matrix();
+	}
 	
 	public Matrix getNeurons() {
 		return neurons;
