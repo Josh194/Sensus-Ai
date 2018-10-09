@@ -16,7 +16,6 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
-import java.awt.color.ColorSpace;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -24,7 +23,6 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.image.BufferedImage;
-import java.awt.image.ColorConvertOp;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -64,7 +62,6 @@ import org.xml.sax.SAXException;
 
 import Graphics.Drawing;
 import main.NN.Connection;
-import main.NN.Convolution;
 import main.NN.Layer;
 import main.NN.Neurons.Neuron;
 import main.util.Cast;
@@ -101,7 +98,7 @@ public class Run extends JFrame {
 	public static int AF = 0;
 	private static int InputLine = 0;
 	private static int InputLines;
-	private static Double[] Input = new Double[neuralNetwork.layers.get(0).neurons.size() + 1];
+	private static Double[] Input = new Double[neuralNetwork.layers.get(0).neurons.size() + neuralNetwork.layers.get(neuralNetwork.layers.size() - 1).neurons.size()];
 	private static Connection connectionToRemove = null;
 	private static Integer NeuronLayer = null;
 	private static Double MaxRange = 0d;
@@ -143,7 +140,7 @@ public class Run extends JFrame {
 
 		initActionListeners();
 
-		setTitle("Sensus Ai 1.2.0");
+		setTitle("Sensus Ai 1.4.0");
 		setSize(CANVAS_WIDTH + 480, CANVAS_HEIGHT);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setUndecorated(true);
@@ -435,8 +432,7 @@ public class Run extends JFrame {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-
-				Input = new Double[neuralNetwork.layers.get(0).neurons.size() + 1];
+				Input = new Double[neuralNetwork.layers.get(0).neurons.size() + neuralNetwork.layers.get(neuralNetwork.layers.size() - 1).neurons.size()];
 
 				fileChooser.setFileFilter((new FileNameExtensionFilter("text files (*.txt)", "txt")));
 				int returnVal = fileChooser.showOpenDialog(fileChooser);
@@ -602,30 +598,25 @@ public class Run extends JFrame {
 	}
 
 	public static int getLines(String File) throws IOException {
-		try (FileReader input = new FileReader(File); LineNumberReader count = new LineNumberReader(input);) {
+		try (
+				FileReader input = new FileReader(File);
+				LineNumberReader count = new LineNumberReader(input);
+				) {
 			while (count.skip(Long.MAX_VALUE) > 0) {
+				
 			}
-
 			return (count.getLineNumber());
 		}
 	}
 
 	public static void loadInput(String File) {
-		for (int i = 0; i <= neuralNetwork.layers.get(0).neurons.size() - BiasComposition[0]; i++) {
+		for (int i = 0; i <= neuralNetwork.layers.get(0).neurons.size() - BiasComposition[0] + neuralNetwork.layers.get(neuralNetwork.layers.size() - 1).neurons.size() - 1; i++) {
 			try {
 				Input[i] = Double.parseDouble(Files.readAllLines(Paths.get(File)).get(InputLine));
 				if (InputLine == InputLines) {
 					InputLine = 0;
-				} else {
-					if (InputLine % neuralNetwork.layers.get(0).neurons.size() - BiasComposition[0] == 0) {
-						if (InputLine != 0) {
-							InputLine += neuralNetwork.layers.get(neuralNetwork.layers.size() - 1).neurons.size();
-						} else {
-							InputLine++;
-						}
-					} else {
-						InputLine++;
-					}
+				} else {			
+					InputLine++;
 				}
 			} catch (NumberFormatException e) {
 				e.printStackTrace();
