@@ -7,3 +7,7 @@ New:
 New Error Graph
 Full Support for Multiple Output Neurons
 Neuron Resizing based on Layer Size
+Fixed Graph Range
+Highlight Selected Connections
+Fixed Speed (Now Runs Much Faster)
+Fixed Multiple Output Neuron Support

@@ -33,10 +33,10 @@ public class Drawing {
 	public static boolean Added = false;
 
 	public static void startAnimation() {
-		animation.schedule(new updateAnimation(), 10l);
+		animation.schedule(new UpdateAnimation(), 10l);
 	}
 
-	static class updateAnimation extends TimerTask {
+	static class UpdateAnimation extends TimerTask {
 		public void run() {
 			animationX = animationX + 0.02;
 			if (animationX < 1 + (Run.neuralNetwork.layers.size() * 2)) {
@@ -48,7 +48,6 @@ public class Drawing {
 	}
 
 	public static void update(Graphics2D g2) {
-
 		for (Vector2D point : graphPoints) {
 			g2.setColor(Color.BLACK);
 			drawOutput(g2, (int) ((graphSize.width * point.x) / pointNumber) + 20, (graphLocation.y + 20)
@@ -65,12 +64,14 @@ public class Drawing {
 		}
 
 		if (graphPoints.size() > 100) {
+			if (graphPoints.size() > 200) {
+				graphPoints.remove(1);
+			}
 			graphPoints = simplify.filter(graphPoints);
 		}
 	}
 
 	public static void updateOutput(Graphics2D g2) {
-
 		for (Double point : outputPoints) {
 			g2.setColor(Color.BLACK);
 			drawOutput(g2, outputLocation.x + ((outputSize.width / outputPoints.size()) * outputPoints.indexOf(point)),
