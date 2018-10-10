@@ -13,31 +13,31 @@ import main.util.Vector2D;
 
 public class NeuralNetwork {
 
-	public ArrayList<Double> Input = new ArrayList<Double>();
-	public ArrayList<Double> TargetOutput = new ArrayList<Double>();
+	public ArrayList<Double> input = new ArrayList<Double>();
+	public ArrayList<Double> targetOutput = new ArrayList<Double>();
 	public ArrayList<Layer> layers = new ArrayList<Layer>();
 	public ArrayList<Connection> connections = new ArrayList<Connection>();
-	public Double TeachingRate;
-	Color InputColor = new Color(255, 203, 69);
-	Color HiddenColor = new Color(81, 204, 65);
-	Color OutputColor = new Color(255, 98, 36);
-	Color BiasColor = new Color(255, 153, 248);
-	Double Error;
-	public Double maxError;
-	public Double minError;
-	Double Output;
-	public Double maxOutput;
-	public Double minOutput;
-	private Double MinRange = 0d;
-	private Double MaxRange = 1d;
+	public Double teachingRate;
+	Color inputColor = new Color(255, 203, 69);
+	Color hiddenColor = new Color(81, 204, 65);
+	Color outputColor = new Color(255, 98, 36);
+	Color biasColor = new Color(255, 153, 248);
+	Double error;
+	public Double maxError = 0d;
+	public Double minError = 0d;
+	Double output;
+	public Double maxOutput = 0d;
+	public Double minOutput = 0d;
+	private Double minRange = 0d;
+	private Double maxRange = 1d;
 	private static int NX;
 	private static int NY;
-	private static int PointX = 0;
+	private static int pointX = 0;
 
 	public NeuralNetwork(int[] NeuralNetworkComposition, int[] NeuralNetworkBiasComposition, Double teachingRate) {
 		connections.clear();
 		layers.clear();
-		TeachingRate = teachingRate;
+		this.teachingRate = teachingRate;
 		for (int i = 0; i < NeuralNetworkComposition.length; i++) {
 			layers.add(new Layer());
 		}
@@ -47,18 +47,18 @@ public class NeuralNetwork {
 				for (int i = 0; i < NeuralNetworkComposition[layers.indexOf(layer)]; i++) {
 					if (i == NeuralNetworkComposition[layers.indexOf(layer)] - 1) {
 						if (NeuralNetworkBiasComposition[layers.indexOf(layer)] == 1) {
-							layer.addNeuron(new Neuron(0d, layer, 2, InputColor));
-							layer.addNeuron(new Neuron(1d, layer, 4, BiasColor));
+							layer.addNeuron(new Neuron(0d, layer, 2, inputColor));
+							layer.addNeuron(new Neuron(1d, layer, 4, biasColor));
 						} else {
-							layer.addNeuron(new Neuron(0d, layer, 2, InputColor));
+							layer.addNeuron(new Neuron(0d, layer, 2, inputColor));
 						}
 					} else {
-						layer.addNeuron(new Neuron(0d, layer, 2, InputColor));
+						layer.addNeuron(new Neuron(0d, layer, 2, inputColor));
 					}
 				}
 			} else if (layers.indexOf(layer) == (layers.size() - 1)) {
 				for (int i = 0; i < NeuralNetworkComposition[layers.indexOf(layer)]; i++) {
-					layer.addNeuron(new Neuron(0d, layer, 3, OutputColor));
+					layer.addNeuron(new Neuron(0d, layer, 3, outputColor));
 					for (Neuron neuron : layers.get(layers.indexOf(layer) - 1).neurons) {
 						connections.add(new Connection(1d, neuron, layer.neurons.get(i), new Color(0, 0, 0)));
 					}
@@ -67,13 +67,13 @@ public class NeuralNetwork {
 				for (int i = 0; i < NeuralNetworkComposition[layers.indexOf(layer)]; i++) {
 					if (i == NeuralNetworkComposition[layers.indexOf(layer)] - 1) {
 						if (NeuralNetworkBiasComposition[layers.indexOf(layer)] == 1) {
-							layer.addNeuron(new Neuron(0d, layer, 1, HiddenColor));
-							layer.addNeuron(new Neuron(1d, layer, 4, BiasColor));
+							layer.addNeuron(new Neuron(0d, layer, 1, hiddenColor));
+							layer.addNeuron(new Neuron(1d, layer, 4, biasColor));
 						} else {
-							layer.addNeuron(new Neuron(0d, layer, 1, HiddenColor));
+							layer.addNeuron(new Neuron(0d, layer, 1, hiddenColor));
 						}
 					} else {
-						layer.addNeuron(new Neuron(0d, layer, 1, HiddenColor));
+						layer.addNeuron(new Neuron(0d, layer, 1, hiddenColor));
 					}
 					for (Neuron neuron : layers.get(layers.indexOf(layer) - 1).neurons) {
 						if (layer.neurons.get(i).getType() == 1) {
@@ -106,8 +106,8 @@ public class NeuralNetwork {
 	}
 
 	public void setInput(ArrayList<Double> input) {
-		Input = input;
-		TargetOutput = new ArrayList<Double>(input.subList(
+		this.input = input;
+		targetOutput = new ArrayList<Double>(input.subList(
 				Math.max(input.size() - layers.get(layers.size() - 1).neurons.size() - Run.BiasComposition[0], 0),
 				input.size()));
 		for (Neuron neuron : layers.get(0).neurons) {
@@ -124,7 +124,7 @@ public class NeuralNetwork {
 
 		for (Layer layer : layers) {
 			for (Neuron neuron : layer.neurons) {
-				if (neuron.animationHandler.getColor() == InputColor) {
+				if (neuron.animationHandler.getColor() == inputColor) {
 
 				} else {
 					neuron.update();
@@ -135,9 +135,9 @@ public class NeuralNetwork {
 
 	public void feedBackward() {
 		for (Neuron neuron : layers.get(layers.size() - 1).neurons) {
-			Error = TargetOutput.get(layers.get(layers.size() - 1).neurons.indexOf(neuron)) - neuron.getValue();
-			neuron.setError(Error);
-			Output = neuron.getValue();
+			error = targetOutput.get(layers.get(layers.size() - 1).neurons.indexOf(neuron)) - neuron.getValue();
+			neuron.setError(error);
+			output = neuron.getValue();
 			if (Drawing.outputPoints.size() > 30) {
 				Drawing.outputPoints.remove(0);
 			}
@@ -145,7 +145,7 @@ public class NeuralNetwork {
 		Double sum = 0d;
 		for (Neuron neuron : layers.get(layers.size() - 1).neurons) {
 			sum = sum + Math.pow(
-					(neuron.getValue() - TargetOutput.get(layers.get(layers.size() - 1).neurons.indexOf(neuron))), 2);
+					(neuron.getValue() - targetOutput.get(layers.get(layers.size() - 1).neurons.indexOf(neuron))), 2);
 		}
 		
 		if (minError == null) {
@@ -161,25 +161,25 @@ public class NeuralNetwork {
 			minError = (sum / layers.get(layers.size() - 1).neurons.size());
 		}
 		
-		Drawing.graphPoints.add(new Vector2D(PointX,
+		Drawing.graphPoints.add(new Vector2D(pointX,
 				sum / layers.get(layers.size() - 1).neurons.size()));
 		
 		if (minOutput == null) {
-			minOutput = Output;
-			maxOutput = Output;
+			minOutput = output;
+			maxOutput = output;
 		}
 		
-		if (Output > maxOutput) {
-			maxOutput = Output;
+		if (output > maxOutput) {
+			maxOutput = output;
 		}
 		
-		if (Output < minError) {
-			minOutput = Output;
+		if (output < minError) {
+			minOutput = output;
 		}
 		
-		Drawing.outputPoints.add(Output);
+		Drawing.outputPoints.add(output);
 		
-		PointX++;
+		pointX++;
 		Drawing.pointNumber++;
 
 		Collections.reverse(connections);
@@ -188,35 +188,35 @@ public class NeuralNetwork {
 		}
 		Collections.reverse(connections);
 		for (Connection connection : connections) {
-			connection.setValue(connection.getValue() + (TeachingRate * connection.N2.getError()
-					* AFHandler.AFDerivative(Run.AF, connection.N2.getValue(), MinRange, MaxRange)
+			connection.setValue(connection.getValue() + (teachingRate * connection.N2.getError()
+					* AFHandler.AFDerivative(Run.AF, connection.N2.getValue(), minRange, maxRange)
 					* connection.N1.getValue()));
 		}
 	}
 
 	public Double getMinRange() {
-		return MinRange;
+		return minRange;
 	}
 
 	public void setMinRange(Double minRange) {
-		MinRange = minRange;
+		this.minRange = minRange;
 		for (Layer layer : layers) {
 			for (Neuron neuron : layer.neurons) {
-				neuron.setMinRange(MinRange);
+				neuron.setMinRange(minRange);
 				;
 			}
 		}
 	}
 
 	public Double getMaxRange() {
-		return MaxRange;
+		return maxRange;
 	}
 
 	public void setMaxRange(Double maxRange) {
-		MaxRange = maxRange;
+		this.maxRange = maxRange;
 		for (Layer layer : layers) {
 			for (Neuron neuron : layer.neurons) {
-				neuron.setMaxRange(MaxRange);
+				neuron.setMaxRange(maxRange);
 				;
 			}
 		}

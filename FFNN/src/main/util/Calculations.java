@@ -6,8 +6,16 @@ public class Calculations {
 		double slope = (lineStart.y - lineEnd.y) / (lineStart.x - lineEnd.x);
 		double oppositeSlope = -1 / slope;
 
-		double x = ((slope * (point.y + (slope * lineStart.x) - lineStart.y)) + point.x) / (Math.pow(slope, 2) + 1);
-		double y = (oppositeSlope * (x - point.x)) + point.y;
+		double x;
+		double y;
+		
+		if (slope == 0.0) {
+			x = point.x;
+			y = lineStart.y;
+		} else {
+			x = ((slope * (point.y + (slope * lineStart.x) - lineStart.y)) + point.x) / (Math.pow(slope, 2) + 1);
+			y = (oppositeSlope * (x - point.x)) + point.y;
+		}
 		
 		if (x >= lineStart.x && x <= lineEnd.x) {
 			return distanceToPoint(point, new Vector2D(x, y));

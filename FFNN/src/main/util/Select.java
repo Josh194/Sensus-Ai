@@ -8,7 +8,6 @@ import java.util.ArrayList;
 public class Select {
 
 	public static Shape getObjectUnderCursor(Vector2D mouseLocation, ArrayList<Shape> shapes) {
-
 		Double minDistance = null;
 		Shape closestShape = null;
 
