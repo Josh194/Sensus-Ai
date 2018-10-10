@@ -98,7 +98,8 @@ public class Run extends JFrame {
 	public static int AF = 0;
 	private static int InputLine = 0;
 	private static int InputLines;
-	private static Double[] Input = new Double[neuralNetwork.layers.get(0).neurons.size() + neuralNetwork.layers.get(neuralNetwork.layers.size() - 1).neurons.size()];
+	private static Double[] Input = new Double[neuralNetwork.layers.get(0).neurons.size()
+			+ neuralNetwork.layers.get(neuralNetwork.layers.size() - 1).neurons.size()];
 	private static Connection connectionToRemove = null;
 	private static Integer NeuronLayer = null;
 	private static Double MaxRange = 0d;
@@ -335,17 +336,17 @@ public class Run extends JFrame {
 				} else {
 					SelectedNeuronType = 0;
 				}
-				
+
 			}
-			
+
 			Vector2D mouseLocation = null;
 			Ellipse2D neuronStartShape = null;
 			Neuron neuronStart = null;
-			
+
 			public void mousePressed(MouseEvent me) {
 				mouseLocation = Cast.asVector2D(me.getPoint());
 				neuronStartShape = (Ellipse2D) Select.getObjectUnderCursor(mouseLocation, shapes);
-				
+
 				for (Layer layer : neuralNetwork.layers) {
 					for (Neuron neuron : layer.neurons) {
 						if (neuron.animationHandler.getLocation()
@@ -356,18 +357,19 @@ public class Run extends JFrame {
 					}
 				}
 			}
-                
+
 			public void mouseReleased(MouseEvent me) {
 				mouseLocation = Cast.asVector2D(me.getPoint());
 				neuronStartShape = (Ellipse2D) Select.getObjectUnderCursor(mouseLocation, shapes);
-				
+
 				for (Layer layer : neuralNetwork.layers) {
 					for (Neuron neuron : layer.neurons) {
 						if (neuron.animationHandler.getLocation()
 								.isEqualTo(new Vector2D(neuronStartShape.getBounds().getCenterX(),
 										neuronStartShape.getBounds().getCenterY()))) {
 							if (neuronStart != null) {
-								neuralNetwork.connections.add(new Connection(1.0, neuronStart, neuron, new Color(0, 0, 0)));
+								neuralNetwork.connections
+										.add(new Connection(1.0, neuronStart, neuron, new Color(0, 0, 0)));
 							}
 						}
 					}
@@ -470,7 +472,8 @@ public class Run extends JFrame {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Input = new Double[neuralNetwork.layers.get(0).neurons.size() + neuralNetwork.layers.get(neuralNetwork.layers.size() - 1).neurons.size()];
+				Input = new Double[neuralNetwork.layers.get(0).neurons.size()
+						+ neuralNetwork.layers.get(neuralNetwork.layers.size() - 1).neurons.size()];
 
 				fileChooser.setFileFilter((new FileNameExtensionFilter("text files (*.txt)", "txt")));
 				int returnVal = fileChooser.showOpenDialog(fileChooser);
@@ -636,24 +639,22 @@ public class Run extends JFrame {
 	}
 
 	public static int getLines(String File) throws IOException {
-		try (
-				FileReader input = new FileReader(File);
-				LineNumberReader count = new LineNumberReader(input);
-				) {
+		try (FileReader input = new FileReader(File); LineNumberReader count = new LineNumberReader(input);) {
 			while (count.skip(Long.MAX_VALUE) > 0) {
-				
+
 			}
 			return (count.getLineNumber());
 		}
 	}
 
 	public static void loadInput(String File) {
-		for (int i = 0; i <= neuralNetwork.layers.get(0).neurons.size() - BiasComposition[0] + neuralNetwork.layers.get(neuralNetwork.layers.size() - 1).neurons.size() - 1; i++) {
+		for (int i = 0; i <= neuralNetwork.layers.get(0).neurons.size() - BiasComposition[0]
+				+ neuralNetwork.layers.get(neuralNetwork.layers.size() - 1).neurons.size() - 1; i++) {
 			try {
 				Input[i] = Double.parseDouble(Files.readAllLines(Paths.get(File)).get(InputLine));
 				if (InputLine == InputLines) {
 					InputLine = 0;
-				} else {			
+				} else {
 					InputLine++;
 				}
 			} catch (NumberFormatException e) {
@@ -676,10 +677,20 @@ public class Run extends JFrame {
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
-				loadInput(InputString);
-				neuralNetwork.setInput(new ArrayList<Double>(Arrays.asList(Input)));
-				neuralNetwork.feedForward();
-				neuralNetwork.feedBackward();
+				
+				if (InputLines != 0) {
+					if (MinRange == 0 && MaxRange == 0) {
+						MinRange = GetNumberFromFile.getSmallestNumber(InputString);
+						MaxRange = GetNumberFromFile.getLargestNumber(InputString);
+						neuralNetwork.setMinRange(MinRange);
+						neuralNetwork.setMaxRange(MaxRange);
+					}
+					
+					loadInput(InputString);
+					neuralNetwork.setInput(new ArrayList<Double>(Arrays.asList(Input)));
+					neuralNetwork.feedForward();
+					neuralNetwork.feedBackward();
+				}
 			}
 
 			Graphics2D g2 = (Graphics2D) g;
@@ -737,14 +748,16 @@ public class Run extends JFrame {
 			Drawing.Added = true;
 
 			if (Paused == false) {
-				for (Layer layer : neuralNetwork.layers) {
-					for (Neuron neuron : layer.neurons) {
-						if (neuron.getType() != 4) {
-							neuron.setError(0.0);
-							neuron.setValue(0.0);
+				if (InputLines != 0) {
+					for (Layer layer : neuralNetwork.layers) {
+						for (Neuron neuron : layer.neurons) {
+							if (neuron.getType() != 4) {
+								neuron.setError(0.0);
+								neuron.setValue(0.0);
+							}
 						}
 					}
-				}
+				}	
 			}
 
 			repaint();
