@@ -2,6 +2,7 @@ package main;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 public class GetNumberFromFile {
@@ -26,6 +27,9 @@ public class GetNumberFromFile {
             num = largest;
         } catch(IOException e) {
             System.out.println(e.getMessage());
+        } catch (NoSuchElementException e) {
+    			System.out.println(e.getMessage());
+    			return 0.0;
         }
         return(num);
     }
@@ -48,6 +52,9 @@ public class GetNumberFromFile {
             num = smallest;
         } catch(IOException e) {
             System.out.println(e.getMessage());
+        } catch (NoSuchElementException e) {
+        		System.out.println(e.getMessage());
+        		return 0.0;
         }
         return(num);
     }

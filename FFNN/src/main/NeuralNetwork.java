@@ -186,6 +186,7 @@ public class NeuralNetwork {
 		for (Connection connection : connections) {
 			connection.N1.setError((connection.N1.getError() + connection.N2.getError() * connection.getValue()));
 		}
+		
 		Collections.reverse(connections);
 		for (Connection connection : connections) {
 			connection.setValue(connection.getValue() + (teachingRate * connection.N2.getError()

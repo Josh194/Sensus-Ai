@@ -10,5 +10,6 @@ Neuron Resizing based on Layer Size
 Fixed Graph Range
 Highlight Selected Connections
 Drag To Create New Connections
+Realtime Input Support
 Fixed Speed (Now Runs Much Faster)
 Fixed Multiple Output Neuron Support
