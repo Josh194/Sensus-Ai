@@ -287,6 +287,7 @@ public class Run extends JFrame {
 											.isEqualTo(new Vector2D(closestShape.getBounds().getCenterX(),
 													closestShape.getBounds().getCenterY()))) {
 										NeuronLayer = neuralNetwork.layers.indexOf(neuron.getLayer());
+										SelectedNeuronType = neuron.getType();
 									}
 								}
 							}
@@ -296,7 +297,7 @@ public class Run extends JFrame {
 
 							NeuronMenu neuronMenu = new NeuronMenu();
 							neuronMenu.show(mouseEvent.getComponent(), mouseEvent.getX(), mouseEvent.getY());
-							FoundType = false;
+							FoundType = true;
 						} else {
 							for (Layer layer : neuralNetwork.layers) {
 								for (Neuron neuron : layer.neurons) {
@@ -333,6 +334,43 @@ public class Run extends JFrame {
 					FoundType = false;
 				} else {
 					SelectedNeuronType = 0;
+				}
+				
+			}
+			
+			Vector2D mouseLocation = null;
+			Ellipse2D neuronStartShape = null;
+			Neuron neuronStart = null;
+			
+			public void mousePressed(MouseEvent me) {
+				mouseLocation = Cast.asVector2D(me.getPoint());
+				neuronStartShape = (Ellipse2D) Select.getObjectUnderCursor(mouseLocation, shapes);
+				
+				for (Layer layer : neuralNetwork.layers) {
+					for (Neuron neuron : layer.neurons) {
+						if (neuron.animationHandler.getLocation()
+								.isEqualTo(new Vector2D(neuronStartShape.getBounds().getCenterX(),
+										neuronStartShape.getBounds().getCenterY()))) {
+							neuronStart = neuron;
+						}
+					}
+				}
+			}
+                
+			public void mouseReleased(MouseEvent me) {
+				mouseLocation = Cast.asVector2D(me.getPoint());
+				neuronStartShape = (Ellipse2D) Select.getObjectUnderCursor(mouseLocation, shapes);
+				
+				for (Layer layer : neuralNetwork.layers) {
+					for (Neuron neuron : layer.neurons) {
+						if (neuron.animationHandler.getLocation()
+								.isEqualTo(new Vector2D(neuronStartShape.getBounds().getCenterX(),
+										neuronStartShape.getBounds().getCenterY()))) {
+							if (neuronStart != null) {
+								neuralNetwork.connections.add(new Connection(1.0, neuronStart, neuron, new Color(0, 0, 0)));
+							}
+						}
+					}
 				}
 			}
 		});
@@ -567,7 +605,7 @@ public class Run extends JFrame {
 		Action LearningRateChange = new AbstractAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				neuralNetwork.TeachingRate = Double.parseDouble(LearningRate.getText());
+				neuralNetwork.teachingRate = Double.parseDouble(LearningRate.getText());
 			}
 		};
 
@@ -857,7 +895,7 @@ public class Run extends JFrame {
 					Drawing.animation = new Timer();
 					Drawing.startAnimation();
 
-					neuralNetwork = new NeuralNetwork(NeuronComposition, BiasComposition, neuralNetwork.TeachingRate);
+					neuralNetwork = new NeuralNetwork(NeuronComposition, BiasComposition, neuralNetwork.teachingRate);
 				}
 			});
 
@@ -871,7 +909,7 @@ public class Run extends JFrame {
 					Drawing.animation = new Timer();
 					Drawing.startAnimation();
 
-					neuralNetwork = new NeuralNetwork(NeuronComposition, BiasComposition, neuralNetwork.TeachingRate);
+					neuralNetwork = new NeuralNetwork(NeuronComposition, BiasComposition, neuralNetwork.teachingRate);
 				}
 			});
 
@@ -885,7 +923,7 @@ public class Run extends JFrame {
 					Drawing.animation = new Timer();
 					Drawing.startAnimation();
 
-					neuralNetwork = new NeuralNetwork(NeuronComposition, BiasComposition, neuralNetwork.TeachingRate);
+					neuralNetwork = new NeuralNetwork(NeuronComposition, BiasComposition, neuralNetwork.teachingRate);
 				}
 			});
 
@@ -899,13 +937,16 @@ public class Run extends JFrame {
 					Drawing.animation = new Timer();
 					Drawing.startAnimation();
 
-					neuralNetwork = new NeuralNetwork(NeuronComposition, BiasComposition, neuralNetwork.TeachingRate);
+					neuralNetwork = new NeuralNetwork(NeuronComposition, BiasComposition, neuralNetwork.teachingRate);
 				}
 			});
 
 			RemoveN.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					switch (SelectedNeuronType) {
+					case 0:
+						NeuronComposition[NeuronLayer] = NeuronComposition[NeuronLayer] - 1;
+						break;
 					case 1:
 						NeuronComposition[NeuronLayer] = NeuronComposition[NeuronLayer] - 1;
 						break;
@@ -926,7 +967,7 @@ public class Run extends JFrame {
 					Drawing.animation = new Timer();
 					Drawing.startAnimation();
 
-					neuralNetwork = new NeuralNetwork(NeuronComposition, BiasComposition, neuralNetwork.TeachingRate);
+					neuralNetwork = new NeuralNetwork(NeuronComposition, BiasComposition, neuralNetwork.teachingRate);
 				}
 			});
 
@@ -966,7 +1007,7 @@ public class Run extends JFrame {
 					Drawing.animation = new Timer();
 					Drawing.startAnimation();
 
-					neuralNetwork = new NeuralNetwork(NeuronComposition, BiasComposition, neuralNetwork.TeachingRate);
+					neuralNetwork = new NeuralNetwork(NeuronComposition, BiasComposition, neuralNetwork.teachingRate);
 				}
 			});
 
@@ -1002,7 +1043,7 @@ public class Run extends JFrame {
 					Drawing.animation = new Timer();
 					Drawing.startAnimation();
 
-					neuralNetwork = new NeuralNetwork(NeuronComposition, BiasComposition, neuralNetwork.TeachingRate);
+					neuralNetwork = new NeuralNetwork(NeuronComposition, BiasComposition, neuralNetwork.teachingRate);
 				}
 			});
 		}

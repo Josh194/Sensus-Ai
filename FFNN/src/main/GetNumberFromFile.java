@@ -6,7 +6,7 @@ import java.util.Scanner;
 
 public class GetNumberFromFile {
 	
-	public static Double Num = 0d;
+	public static Double num = 0d;
 	
 	public static Double getLargestNumber(String FilePath) {
         try {
@@ -23,11 +23,11 @@ public class GetNumberFromFile {
 
             file.close();
             
-            Num = largest;
+            num = largest;
         } catch(IOException e) {
             System.out.println(e.getMessage());
         }
-        return(Num);
+        return(num);
     }
 	
 	public static Double getSmallestNumber(String FilePath) {
@@ -45,10 +45,10 @@ public class GetNumberFromFile {
 
             file.close();
             
-            Num = smallest;
+            num = smallest;
         } catch(IOException e) {
             System.out.println(e.getMessage());
         }
-        return(Num);
+        return(num);
     }
 }
