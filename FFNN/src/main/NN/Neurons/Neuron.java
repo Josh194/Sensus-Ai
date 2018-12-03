@@ -2,8 +2,6 @@ package main.NN.Neurons;
 
 import java.awt.Color;
 
-import main.Run;
-import main.NN.AFHandler;
 import main.NN.Layer;
 
 public class Neuron {
@@ -12,27 +10,17 @@ public class Neuron {
 	private Double error = 0.0;
 	private Double minRange;
 	private Double maxRange;
-	private int type; // 1: FF, 2: Input, 3: Output, 4: Bias, 5: Recursive
 	private Layer layer;
 	
-	public NeuronAnimationHandler animationHandler = new NeuronAnimationHandler(null, null, null);
+	public NeuronAnimationHandler animationHandler = new NeuronAnimationHandler(null, null);
 
-	public Neuron(Double value, Layer layer, int type, Color color) {
+	public Neuron(Double value, Layer layer) {
 		this.value = value;
 		this.layer = layer;
-		this.type = type;
-
-		animationHandler.setColor(color);
 	}
 
 	public void update() {
-		if (type == 1) {
-			value = AFHandler.activationFunction(Run.AF, value, minRange, maxRange);
-		} else if (type == 2) {
-			value = AFHandler.activationFunction(Run.AF, value, minRange, maxRange);
-		} else if (type == 3) {
-			value = AFHandler.activationFunction(Run.AF, value, minRange, maxRange);
-		}
+		
 	}
 
 	public Double getValue() {
@@ -67,12 +55,12 @@ public class Neuron {
 		this.maxRange = maxRange;
 	}
 
-	public int getType() {
-		return type;
+	public String getType() {
+		return "None";
 	}
-
-	public void setType(int type) {
-		this.type = type;
+	
+	public Color getColor() {
+		return new Color(0, 0, 0);
 	}
 
 	public Layer getLayer() {

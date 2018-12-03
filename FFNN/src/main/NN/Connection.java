@@ -9,14 +9,12 @@ public class Connection {
 	Double Value;
 	public Neuron N1;
 	public Neuron N2;
-	Color Color;
 	public Double RandomAnimOffset = Math.random();
 
-	public Connection(Double value, Neuron n1, Neuron n2, Color color) {
-		Value = value;
+	public Connection(Neuron n1, Neuron n2) {
+		Value = 0.1 * (Math.random() - 0.5);
 		N1 = n1;
 		N2 = n2;
-		Color = color;
 	}
 
 	public void setValue(Double value) {

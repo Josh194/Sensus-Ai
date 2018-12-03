@@ -22,7 +22,7 @@ public class Drawing {
 
 	public static ArrayList<Vector2D> graphPoints = new ArrayList<Vector2D>();
 	public static ArrayList<Double> outputPoints = new ArrayList<Double>();
-	public static PolyLineSimplification simplify = new PolyLineSimplification(0.2);
+	public static PolyLineSimplification simplify = new PolyLineSimplification(0.0001);
 	public static int pointNumber = 0;
 	public static Dimension graphSize;
 	public static Point graphLocation;
@@ -48,26 +48,33 @@ public class Drawing {
 	}
 
 	public static void update(Graphics2D g2) {
-		for (Vector2D point : graphPoints) {
-			g2.setColor(Color.BLACK);
-			drawOutput(g2, (int) ((graphSize.width * point.x) / pointNumber) + 20, (graphLocation.y + 20)
-					- (int) (Math.abs(point.y) * (graphLocation.y / (Run.neuralNetwork.maxError-Run.neuralNetwork.minError))), 5);
-		}
-
-		for (int i = 1; i < graphPoints.size(); i++) {
-			g2.drawLine((int) (((graphSize.width * graphPoints.get(i - 1).x) / pointNumber) + 20),
-					(graphLocation.y + 20) - (int) (Math.abs((graphPoints.get(i - 1)).y)
-							* (graphLocation.y / (Run.neuralNetwork.maxError-Run.neuralNetwork.minError))),
-					(int) (((graphSize.width * graphPoints.get(i).x) / pointNumber) + 20),
-					(graphLocation.y + 20) - (int) (Math.abs((graphPoints.get(i)).y)
-							* (graphLocation.y / (Run.neuralNetwork.maxError-Run.neuralNetwork.minError))));
-		}
-
-		if (graphPoints.size() > 100) {
-			if (graphPoints.size() > 200) {
-				graphPoints.remove(1);
+		try {
+			for (Vector2D point : graphPoints) {
+				g2.setColor(Color.BLACK);
+				drawOutput(g2, (int) ((graphSize.width * point.x) / pointNumber) + 20, (graphLocation.y + 20)
+						- (int) ((Math.abs(point.y) * (graphLocation.y / (Run.neuralNetwork.maxError-Run.neuralNetwork.minError)))
+							- ((Run.neuralNetwork.minError) * graphLocation.y) / (Run.neuralNetwork.maxError - Run.neuralNetwork.minError)), 5);
 			}
-			graphPoints = simplify.filter(graphPoints);
+
+			for (int i = 1; i < graphPoints.size(); i++) {
+				g2.drawLine((int) (((graphSize.width * graphPoints.get(i - 1).x) / pointNumber) + 20),
+						(graphLocation.y + 20)
+						- (int) ((Math.abs(graphPoints.get(i - 1).y) * (graphLocation.y / (Run.neuralNetwork.maxError-Run.neuralNetwork.minError)))
+							- ((Run.neuralNetwork.minError) * graphLocation.y) / (Run.neuralNetwork.maxError - Run.neuralNetwork.minError)),
+						(int) (((graphSize.width * graphPoints.get(i).x) / pointNumber) + 20),
+						(graphLocation.y + 20)
+						- (int) ((Math.abs(graphPoints.get(i).y) * (graphLocation.y / (Run.neuralNetwork.maxError-Run.neuralNetwork.minError)))
+							- ((Run.neuralNetwork.minError) * graphLocation.y) / (Run.neuralNetwork.maxError - Run.neuralNetwork.minError)));
+			}
+
+			if (graphPoints.size() > 100) {
+				if (graphPoints.size() > 200) {
+					graphPoints.remove(1);
+				}
+				graphPoints = simplify.filter(graphPoints);
+			}
+		} catch (NullPointerException e) {
+			
 		}
 	}
 
