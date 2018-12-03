@@ -1,4 +1,4 @@
-package main.NN;
+package main.NN.Neurons;
 
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;

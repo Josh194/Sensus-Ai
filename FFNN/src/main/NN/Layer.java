@@ -15,5 +15,17 @@ public class Layer {
 	public void addNeuron(Neuron neuron) {
 		neurons.add(neuron);
 	}
+	
+	public int numberOf(Class<?> neuronType) {
+		int num = 0;
+		
+		for (Neuron neuron : neurons) {
+			if (neuron.getClass().equals(neuronType)) {
+				num++;
+			}
+		}
+		
+		return num;
+	}
 
 }

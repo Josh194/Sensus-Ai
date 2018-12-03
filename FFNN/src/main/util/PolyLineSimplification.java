@@ -66,7 +66,7 @@ public class PolyLineSimplification {
 			endPoint = out.get(out.size() - 1);
 
 			out.removeAll(removed);
-
+			
 			return simplify(out, out.indexOf(startPoint), out.indexOf(endPoint));
 		}
 	}

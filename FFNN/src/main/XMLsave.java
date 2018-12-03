@@ -6,6 +6,7 @@ import org.xml.sax.SAXException;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -21,9 +22,9 @@ public class XMLsave {
 
 	public static Document save;
 
-	public static void writeDocumentToFile(int[] Neurons, int[] Bias, Double[] Connection, File file)
+	public static void writeDocumentToFile(ArrayList<ArrayList<String>> Neurons, Double[] Connections, File file)
 			throws TransformerException, ParserConfigurationException {
-		makeDoc(Neurons, Bias, Connection);
+		makeDoc(Neurons, Connections);
 
 		TransformerFactory tFactory = TransformerFactory.newInstance();
 		Transformer transformer = tFactory.newTransformer();
@@ -33,7 +34,7 @@ public class XMLsave {
 		transformer.transform(source, result);
 	}
 
-	private static void makeDoc(int[] Neurons, int[] Bias, Double[] Connections) throws ParserConfigurationException {
+	private static void makeDoc(ArrayList<ArrayList<String>> Neurons, Double[] Connections) throws ParserConfigurationException {
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		DocumentBuilder builder = dbf.newDocumentBuilder();
 		save = builder.newDocument();
@@ -44,26 +45,22 @@ public class XMLsave {
 		Element neurons = save.createElement("Neurons");
 		root.appendChild(neurons);
 
-		for (int NumNeurons : Neurons) {
-			Element LayerNeurons = save.createElement("NumNeurons");
-			neurons.appendChild(LayerNeurons);
-			LayerNeurons.insertBefore(save.createTextNode(Integer.toString(NumNeurons)), LayerNeurons.getLastChild());
+		for (ArrayList<String> layer: Neurons) {
+			Element typeLayer = save.createElement("Layer");
+			neurons.appendChild(typeLayer);
+			
+			for (String neuronType : layer) {
+				Element neuron = save.createElement("Neuron");
+				typeLayer.appendChild(neuron);
+				neuron.insertBefore(save.createTextNode(neuronType), neuron.getLastChild());
+			}
 		}
 
-		Element bias = save.createElement("Bias");
-		root.appendChild(bias);
-
-		for (int HasBias : Bias) {
-			Element BiasNeurons = save.createElement("HasBias");
-			bias.appendChild(BiasNeurons);
-			BiasNeurons.insertBefore(save.createTextNode(Integer.toString(HasBias)), BiasNeurons.getLastChild());
-		}
-
-		Element connections = save.createElement("ConnectionValues");
+		Element connections = save.createElement("Connections");
 		root.appendChild(connections);
 
 		for (Double ConnectionValue : Connections) {
-			Element Value = save.createElement("ConnectionValue");
+			Element Value = save.createElement("Connection");
 			connections.appendChild(Value);
 			Value.insertBefore(save.createTextNode(Double.toString(ConnectionValue)), Value.getLastChild());
 		}

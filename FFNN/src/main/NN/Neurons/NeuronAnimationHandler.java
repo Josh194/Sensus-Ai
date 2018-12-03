@@ -1,19 +1,15 @@
 package main.NN.Neurons;
 
-import java.awt.Color;
-
 import main.util.Vector2D;
 
 public class NeuronAnimationHandler {
 	
 	private Vector2D location;
 	private Integer size;
-	private Color color;
 	
-	public NeuronAnimationHandler(Vector2D location, Integer size, Color color) {
+	public NeuronAnimationHandler(Vector2D location, Integer size) {
 		this.location = location;
 		this	.size = size;
-		this.color = color;
 	}
 
 	public Vector2D getLocation() {
@@ -31,13 +27,4 @@ public class NeuronAnimationHandler {
 	public void setSize(int size) {
 		this.size = size;
 	}
-	
-	public Color getColor() {
-		return color;
-	}
-
-	public void setColor(Color color) {
-		this.color = color;
-	}
-	
 }

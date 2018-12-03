@@ -63,7 +63,11 @@ import org.xml.sax.SAXException;
 import Graphics.Drawing;
 import main.NN.Connection;
 import main.NN.Layer;
+import main.NN.Neurons.BiasNeuron;
+import main.NN.Neurons.HiddenNeuron;
+import main.NN.Neurons.InputNeuron;
 import main.NN.Neurons.Neuron;
+import main.NN.Neurons.OutputNeuron;
 import main.util.Cast;
 import main.util.Select;
 import main.util.Vector2D;
@@ -87,14 +91,12 @@ public class Run extends JFrame {
 	public static BufferedImage BiasNeuronImage;
 	public static BufferedImage InputNeuronImage;
 	public static BufferedImage OutputNeuronImage;
-	public static int SelectedNeuronType = 0;
+	public static String SelectedNeuronType = "None";
 	public static boolean FoundType = false;
 
 	public Boolean Paused = true;
 	public String InputString = "";
-	public static int[] NeuronComposition = new int[] { 2, 3, 5, 5, 3, 1 };
-	public static int[] BiasComposition = new int[] { 0, 1, 1, 0, 0, 0 };
-	public static NeuralNetwork neuralNetwork = new NeuralNetwork(NeuronComposition, BiasComposition, 0.01);
+	public static NeuralNetwork neuralNetwork = new NeuralNetwork(0.01);
 	public static int AF = 0;
 	private static int InputLine = 0;
 	private static int InputLines;
@@ -334,7 +336,7 @@ public class Run extends JFrame {
 				if (FoundType) {
 					FoundType = false;
 				} else {
-					SelectedNeuronType = 0;
+					SelectedNeuronType = "None";
 				}
 
 			}
@@ -369,7 +371,7 @@ public class Run extends JFrame {
 										neuronStartShape.getBounds().getCenterY()))) {
 							if (neuronStart != null) {
 								neuralNetwork.connections
-										.add(new Connection(1.0, neuronStart, neuron, new Color(0, 0, 0)));
+										.add(new Connection(neuronStart, neuron));
 							}
 						}
 					}
@@ -503,30 +505,23 @@ public class Run extends JFrame {
 
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
 					File file = fileChooser.getSelectedFile();
-					int[] Neurons = new int[neuralNetwork.layers.size()];
+					
+					@SuppressWarnings("unchecked")
+					ArrayList<ArrayList<String>> neurons = new ArrayList<ArrayList<String>>();
 					for (Layer layer : neuralNetwork.layers) {
-						Neurons[neuralNetwork.layers.indexOf(layer)] = layer.neurons.size();
-					}
-
-					int[] Bias = new int[neuralNetwork.layers.size()];
-					int i = 0;
-					for (Layer layer : neuralNetwork.layers) {
+						neurons.add(new ArrayList<String>());
 						for (Neuron neuron : layer.neurons) {
-							if (neuron.getType() == 4) {
-								Bias[i + 1] = 1;
-								i++;
-							} else {
-								Bias[i + 1] = 0;
-							}
+							neurons.get(neuralNetwork.layers.indexOf(layer)).add(neuron.getType());
 						}
 					}
 
-					Double[] Connections = new Double[neuralNetwork.connections.size()];
+					Double[] connections = new Double[neuralNetwork.connections.size()];
 					for (Connection connection : neuralNetwork.connections) {
-						Connections[neuralNetwork.connections.indexOf(connection)] = connection.getValue();
+						connections[neuralNetwork.connections.indexOf(connection)] = connection.getValue();
 					}
+					
 					try {
-						XMLsave.writeDocumentToFile(Neurons, Bias, Connections, new File(file.getAbsolutePath()));
+						XMLsave.writeDocumentToFile(neurons, connections, new File(file.getAbsolutePath()));
 					} catch (TransformerException e1) {
 						e1.printStackTrace();
 					} catch (ParserConfigurationException e1) {
@@ -565,30 +560,23 @@ public class Run extends JFrame {
 					}
 					Node node = nList.item(0);
 					Element eElement = (Element) node;
-
-					int[] Neurons = new int[eElement.getElementsByTagName("NumNeurons").getLength()];
-					for (int i = 0; i < Neurons.length; i++) {
-						Neurons[i] = Integer
-								.parseInt(eElement.getElementsByTagName("NumNeurons").item(i).getTextContent());
+					
+					for (int i = 0; i < eElement.getElementsByTagName("Layer").getLength(); i++) {
+						NodeList neurons = ((Element) eElement.getElementsByTagName("Layer").item(i)).getElementsByTagName("Neuron");
+						for (int n = 0; n < neurons.getLength(); n++) {
+							//neuralNetwork.layers.add(new Class.forName(neurons.item(n).getTextContent()));
+							try {
+								Class.forName("main.NeuralNetwork").newInstance();
+							} catch (ClassNotFoundException | InstantiationException | IllegalAccessException e1) {
+								e1.printStackTrace();
+							}
+						}
 					}
+					
+					neuralNetwork.createConnections();
 
 					try {
-						nList = XMLsave.asXML(file).getElementsByTagName("Bias");
-					} catch (SAXException | IOException | ParserConfigurationException e1) {
-						e1.printStackTrace();
-					}
-					node = nList.item(0);
-					eElement = (Element) node;
-
-					int[] Bias = new int[eElement.getElementsByTagName("HasBias").getLength()];
-					for (int i = 0; i < Bias.length; i++) {
-						Bias[i] = Integer.parseInt(eElement.getElementsByTagName("HasBias").item(i).getTextContent());
-					}
-
-					neuralNetwork = new NeuralNetwork(Neurons, Bias, 0.01);
-
-					try {
-						nList = XMLsave.asXML(file).getElementsByTagName("ConnectionValues");
+						nList = XMLsave.asXML(file).getElementsByTagName("Connections");
 					} catch (SAXException | IOException | ParserConfigurationException e1) {
 						e1.printStackTrace();
 					}
@@ -596,7 +584,7 @@ public class Run extends JFrame {
 					eElement = (Element) node;
 
 					for (Connection connection : neuralNetwork.connections) {
-						connection.setValue(Double.parseDouble(eElement.getElementsByTagName("ConnectionValue")
+						connection.setValue(Double.parseDouble(eElement.getElementsByTagName("Connection")
 								.item(neuralNetwork.connections.indexOf(connection)).getTextContent()));
 					}
 				} else {
@@ -618,7 +606,7 @@ public class Run extends JFrame {
 
 				for (Layer layer : neuralNetwork.layers) {
 					for (Neuron neuron : layer.neurons) {
-						if (neuron.getType() != 4) {
+						if (!neuron.getType().equals("BiasNeuron")) {
 							neuron.setError(0.0);
 							neuron.setValue(0.0);
 						}
@@ -641,14 +629,14 @@ public class Run extends JFrame {
 	public static int getLines(String File) throws IOException {
 		try (FileReader input = new FileReader(File); LineNumberReader count = new LineNumberReader(input);) {
 			while (count.skip(Long.MAX_VALUE) > 0) {
-
+				
 			}
 			return (count.getLineNumber());
 		}
 	}
 
 	public static void loadInput(String File) {
-		for (int i = 0; i <= neuralNetwork.layers.get(0).neurons.size() - BiasComposition[0]
+		for (int i = 0; i <= neuralNetwork.layers.get(0).neurons.size() - neuralNetwork.layers.get(0).numberOf(BiasNeuron.class)
 				+ neuralNetwork.layers.get(neuralNetwork.layers.size() - 1).neurons.size() - 1; i++) {
 			try {
 				Input[i] = Double.parseDouble(Files.readAllLines(Paths.get(File)).get(InputLine));
@@ -717,14 +705,14 @@ public class Run extends JFrame {
 					Drawing.drawLine(g2, (int) connection.N1.animationHandler.getLocation().x,
 							(int) connection.N1.animationHandler.getLocation().y,
 							(int) connection.N2.animationHandler.getLocation().x,
-							(int) connection.N2.animationHandler.getLocation().y, (int) (connection.getValue() * 5),
+							(int) connection.N2.animationHandler.getLocation().y, (int) ((40 - 1) / (1 + (Math.pow(2.71828, (-1 * connection.getValue()) + 5))) + 1),
 							(-2 * neuralNetwork.layers.indexOf(connection.N1.getLayer())) - connection.RandomAnimOffset,
 							Color.black);
 				} else {
 					Drawing.drawLine(g2, (int) connection.N1.animationHandler.getLocation().x,
 							(int) connection.N1.animationHandler.getLocation().y,
 							(int) connection.N2.animationHandler.getLocation().x,
-							(int) connection.N2.animationHandler.getLocation().y, (int) (connection.getValue() * 5),
+							(int) connection.N2.animationHandler.getLocation().y, (int) ((40 - 1) / (1 + (Math.pow(2.71828, (-1 * connection.getValue()) + 5))) + 1),
 							(-2 * neuralNetwork.layers.indexOf(connection.N1.getLayer())) - connection.RandomAnimOffset,
 							connection.getColor());
 				}
@@ -732,7 +720,7 @@ public class Run extends JFrame {
 
 			for (Layer layer : neuralNetwork.layers) {
 				for (Neuron neuron : layer.neurons) {
-					g2.setColor(neuron.animationHandler.getColor());
+					g2.setColor(neuron.getColor());
 					Drawing.drawCircle(g2, (int) neuron.animationHandler.getLocation().x,
 							(int) neuron.animationHandler.getLocation().y, (int) neuron.animationHandler.getSize(),
 							-2 * neuralNetwork.layers.indexOf(neuron.getLayer()));
@@ -751,7 +739,7 @@ public class Run extends JFrame {
 				if (InputLines != 0) {
 					for (Layer layer : neuralNetwork.layers) {
 						for (Neuron neuron : layer.neurons) {
-							if (neuron.getType() != 4) {
+							if (!neuron.getType().equals("BiasNeuron")) {
 								neuron.setError(0.0);
 								neuron.setValue(0.0);
 							}
@@ -850,19 +838,19 @@ public class Run extends JFrame {
 					new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON));
 
 			switch (SelectedNeuronType) {
-			case 0:
+			case "None":
 				g2.drawString("Nothing Selected", 20, 30);
 				break;
-			case 1:
+			case "HiddenNeuron":
 				g2.drawImage(BasicNeuronImage, null, 0, 0);
 				break;
-			case 2:
+			case "InputNeuron":
 				g2.drawImage(InputNeuronImage, null, 0, 0);
 				break;
-			case 3:
+			case "OutputNeuron":
 				g2.drawImage(OutputNeuronImage, null, 0, 0);
 				break;
-			case 4:
+			case "BiasNeuron":
 				g2.drawImage(BiasNeuronImage, null, 0, 0);
 				break;
 			}
@@ -900,163 +888,112 @@ public class Run extends JFrame {
 
 			SimpleN.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					NeuronComposition[NeuronLayer] = NeuronComposition[NeuronLayer] + 1;
+					Neuron neuron = new HiddenNeuron(0.0, neuralNetwork.layers.get(NeuronLayer));
+					
+					neuralNetwork.layers.get(NeuronLayer).neurons.add(neuron);
+					neuralNetwork.createConnections();
+					neuralNetwork.updateAnim();
 
 					shapes.clear();
 					Drawing.Added = false;
 					Drawing.animationX = -5d;
 					Drawing.animation = new Timer();
 					Drawing.startAnimation();
-
-					neuralNetwork = new NeuralNetwork(NeuronComposition, BiasComposition, neuralNetwork.teachingRate);
 				}
 			});
 
 			BiasN.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					BiasComposition[NeuronLayer] = BiasComposition[NeuronLayer] + 1;
+					Neuron neuron = new BiasNeuron(1.0, neuralNetwork.layers.get(NeuronLayer));
+					
+					neuralNetwork.layers.get(NeuronLayer).neurons.add(neuron);
+					neuralNetwork.createConnections();
+					neuralNetwork.updateAnim();
 
 					shapes.clear();
 					Drawing.Added = false;
 					Drawing.animationX = -5d;
 					Drawing.animation = new Timer();
 					Drawing.startAnimation();
-
-					neuralNetwork = new NeuralNetwork(NeuronComposition, BiasComposition, neuralNetwork.teachingRate);
 				}
 			});
 
 			InputN.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					NeuronComposition[NeuronLayer] = NeuronComposition[NeuronLayer] + 1;
+					Neuron neuron = new InputNeuron(0.0, neuralNetwork.layers.get(NeuronLayer));
+					
+					neuralNetwork.layers.get(NeuronLayer).neurons.add(neuron);
+					neuralNetwork.createConnections();
+					neuralNetwork.updateAnim();
 
 					shapes.clear();
 					Drawing.Added = false;
 					Drawing.animationX = -5d;
 					Drawing.animation = new Timer();
 					Drawing.startAnimation();
-
-					neuralNetwork = new NeuralNetwork(NeuronComposition, BiasComposition, neuralNetwork.teachingRate);
 				}
 			});
 
 			OutputN.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					NeuronComposition[NeuronLayer] = NeuronComposition[NeuronLayer] + 1;
+					Neuron neuron = new OutputNeuron(0.0, neuralNetwork.layers.get(NeuronLayer));
+					
+					neuralNetwork.layers.get(NeuronLayer).neurons.add(neuron);
+					neuralNetwork.createConnections();
+					neuralNetwork.updateAnim();
 
 					shapes.clear();
 					Drawing.Added = false;
 					Drawing.animationX = -5d;
 					Drawing.animation = new Timer();
 					Drawing.startAnimation();
-
-					neuralNetwork = new NeuralNetwork(NeuronComposition, BiasComposition, neuralNetwork.teachingRate);
 				}
 			});
 
 			RemoveN.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					switch (SelectedNeuronType) {
-					case 0:
-						NeuronComposition[NeuronLayer] = NeuronComposition[NeuronLayer] - 1;
-						break;
-					case 1:
-						NeuronComposition[NeuronLayer] = NeuronComposition[NeuronLayer] - 1;
-						break;
-					case 2:
-						NeuronComposition[NeuronLayer] = NeuronComposition[NeuronLayer] - 1;
-						break;
-					case 3:
-						NeuronComposition[NeuronLayer] = NeuronComposition[NeuronLayer] - 1;
-						break;
-					case 4:
-						BiasComposition[NeuronLayer] = BiasComposition[NeuronLayer] - 1;
-						break;
-					}
+					neuralNetwork.layers.get(NeuronLayer).neurons.remove(0);
+					neuralNetwork.createConnections();
+					neuralNetwork.updateAnim();
 
 					shapes.clear();
 					Drawing.Added = false;
 					Drawing.animationX = -5d;
 					Drawing.animation = new Timer();
 					Drawing.startAnimation();
-
-					neuralNetwork = new NeuralNetwork(NeuronComposition, BiasComposition, neuralNetwork.teachingRate);
 				}
 			});
 
 			AddL.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-
-					int[] temp = new int[NeuronComposition.length + 1];
-
-					for (int i = 0; i < NeuronComposition.length + 1; i++) {
-						if (i == NeuronLayer + 1) {
-							temp[i] = 1;
-						} else if (i <= NeuronLayer) {
-							temp[i] = NeuronComposition[i];
-						} else if (i > NeuronLayer) {
-							temp[i] = NeuronComposition[i - 1];
-						}
-					}
-
-					NeuronComposition = temp;
-					temp = new int[BiasComposition.length + 1];
-
-					for (int i = 0; i < BiasComposition.length + 1; i++) {
-						if (i == NeuronLayer + 1) {
-							temp[i] = 0;
-						} else if (i <= NeuronLayer) {
-							temp[i] = BiasComposition[i];
-						} else if (i > NeuronLayer) {
-							temp[i] = BiasComposition[i - 1];
-						}
-					}
-
-					BiasComposition = temp;
+					neuralNetwork.layers.add(NeuronLayer + 1, new Layer());
+					
+					Neuron neuron = new HiddenNeuron(0.0, neuralNetwork.layers.get(NeuronLayer + 1));
+					
+					neuralNetwork.layers.get(NeuronLayer + 1).neurons.add(neuron);
+					neuralNetwork.createConnections();
+					neuralNetwork.updateAnim();
 
 					shapes.clear();
 					Drawing.Added = false;
 					Drawing.animationX = -5d;
 					Drawing.animation = new Timer();
 					Drawing.startAnimation();
-
-					neuralNetwork = new NeuralNetwork(NeuronComposition, BiasComposition, neuralNetwork.teachingRate);
 				}
 			});
 
 			RemoveL.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-
-					int[] temp = new int[NeuronComposition.length - 1];
-
-					for (int i = 0; i < NeuronComposition.length - 1; i++) {
-						if (i < NeuronLayer) {
-							temp[i] = NeuronComposition[i];
-						} else if (i >= NeuronLayer) {
-							temp[i] = NeuronComposition[i + 1];
-						}
-					}
-
-					NeuronComposition = temp;
-					temp = new int[BiasComposition.length - 1];
-
-					for (int i = 0; i < BiasComposition.length - 1; i++) {
-						if (i < NeuronLayer) {
-							temp[i] = BiasComposition[i];
-						} else if (i >= NeuronLayer) {
-							temp[i] = BiasComposition[i + 1];
-						}
-					}
-
-					BiasComposition = temp;
-
+					neuralNetwork.layers.remove(neuralNetwork.layers.get(NeuronLayer));
+					
+					neuralNetwork.createConnections();
+					neuralNetwork.updateAnim();
+					
 					shapes.clear();
 					Drawing.Added = false;
 					Drawing.animationX = -5d;
 					Drawing.animation = new Timer();
 					Drawing.startAnimation();
-
-					neuralNetwork = new NeuralNetwork(NeuronComposition, BiasComposition, neuralNetwork.teachingRate);
 				}
 			});
 		}
