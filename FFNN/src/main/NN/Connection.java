@@ -6,27 +6,51 @@ import main.NN.Neurons.Neuron;
 
 public class Connection {
 
-	Double Value;
-	public Neuron N1;
-	public Neuron N2;
-	public Double RandomAnimOffset = Math.random();
+	private Double value;
+	private Neuron firstNeuron;
+	private Neuron secondNeuron;
+	private Double randomAnimOffset = Math.random();
 
-	public Connection(Neuron n1, Neuron n2) {
-		Value = 0.1 * (Math.random() - 0.5);
-		N1 = n1;
-		N2 = n2;
+	public Connection(Neuron firstNeuron, Neuron secondNeuron) {
+		setValue(0.1 * (Math.random() - 0.5));
+		setFirstNeuron(firstNeuron);
+		setSecondNeuron(secondNeuron);
+	}
+	
+	public Double getValue() {
+		return value;
 	}
 
 	public void setValue(Double value) {
-		Value = value;
+		this.value = value;
+	}
+	
+	public Neuron getFirstNeuron() {
+		return firstNeuron;
 	}
 
-	public Double getValue() {
-		return Value;
+	public void setFirstNeuron(Neuron firstNeuron) {
+		this.firstNeuron = firstNeuron;
+	}
+	
+	public Neuron getSecondNeuron() {
+		return secondNeuron;
+	}
+
+	public void setSecondNeuron(Neuron secondNeuron) {
+		this.secondNeuron = secondNeuron;
+	}
+	
+	public Double getRandomAnimOffset() {
+		return randomAnimOffset;
+	}
+
+	public void setRandomAnimOffset(Double randomAnimOffset) {
+		this.randomAnimOffset = randomAnimOffset;
 	}
 
 	public Color getColor() {
-		if (Value >= 0) {
+		if (value >= 0) {
 			return (new Color(225, 129, 45));
 		} else {
 			return (new Color(0, 100, 157));

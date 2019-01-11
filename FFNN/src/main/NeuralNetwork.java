@@ -1,6 +1,5 @@
 package main;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -63,6 +62,12 @@ public class NeuralNetwork {
 		updateAnim();
 	}
 	
+	public void clear() {
+		connections.clear();
+		layers.clear();
+		Drawing.graphPoints.clear();
+	}
+	
 	public void createConnections() {
 		connections.clear();
 		
@@ -102,6 +107,7 @@ public class NeuralNetwork {
 		targetOutput = new ArrayList<Double>(input.subList(
 				Math.max(input.size() - layers.get(layers.size() - 1).neurons.size() - layers.get(0).numberOf(BiasNeuron.class), 0),
 				input.size()));
+		System.out.println(targetOutput.get(0));
 		for (Neuron neuron : layers.get(0).neurons) {
 			if (!neuron.getType().equals("BiasNeuron")) {
 				neuron.setValue(input.get(layers.get(0).neurons.indexOf(neuron)));
@@ -111,7 +117,7 @@ public class NeuralNetwork {
 
 	public void feedForward() {
 		for (Connection connection : connections) {
-			connection.N2.setValue((connection.N2.getValue() + connection.N1.getValue() * connection.getValue()));
+			connection.getSecondNeuron().setValue((connection.getSecondNeuron().getValue() + connection.getFirstNeuron().getValue() * connection.getValue()));
 		}
 
 		for (Layer layer : layers) {
@@ -136,7 +142,7 @@ public class NeuralNetwork {
 			sum = sum + Math.abs((neuron.getValue() - targetOutput.get(layers.get(layers.size() - 1).neurons.indexOf(neuron))));
 		}
 		
-		if (batchProg == layers.get(layers.size() - 1).neurons.size() + layers.get(0).neurons.size() - layers.get(0).numberOf(BiasNeuron.class)) {
+		if (batchProg == Run.InputLines) {
 			if (minError == null) {
 				minError = batchAverage / (layers.get(layers.size() - 1).neurons.size() + layers.get(0).neurons.size() - layers.get(0).numberOf(BiasNeuron.class));
 				maxError = batchAverage / (layers.get(layers.size() - 1).neurons.size() + layers.get(0).neurons.size() - layers.get(0).numberOf(BiasNeuron.class));
@@ -180,14 +186,14 @@ public class NeuralNetwork {
 
 		Collections.reverse(connections);
 		for (Connection connection : connections) {
-			connection.N1.setError((connection.N1.getError() + connection.N2.getError() * connection.getValue()));
+			connection.getFirstNeuron().setError((connection.getFirstNeuron().getError() + connection.getSecondNeuron().getError() * connection.getValue()));
 		}
 		
 		Collections.reverse(connections);
 		for (Connection connection : connections) {
-			connection.setValue(connection.getValue() + (teachingRate * connection.N2.getError()
-					* AFHandler.AFDerivative(Run.AF, connection.N2.getValue(), minRange, maxRange)
-					* connection.N1.getValue()));
+			connection.setValue(connection.getValue() + (teachingRate * connection.getSecondNeuron().getError()
+					* AFHandler.AFDerivative(Run.AF, connection.getSecondNeuron().getValue(), minRange, maxRange)
+					* connection.getFirstNeuron().getValue()));
 		}
 	}
 

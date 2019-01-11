@@ -20,11 +20,11 @@ import javax.xml.transform.stream.StreamResult;
 
 public class XMLsave {
 
-	public static Document save;
+	private static Document save;
 
-	public static void writeDocumentToFile(ArrayList<ArrayList<String>> Neurons, Double[] Connections, File file)
+	public static void writeDocumentToFile(ArrayList<ArrayList<String>> Neurons, Double[] Connections, int epoch, File file)
 			throws TransformerException, ParserConfigurationException {
-		makeDoc(Neurons, Connections);
+		makeDoc(Neurons, Connections, epoch);
 
 		TransformerFactory tFactory = TransformerFactory.newInstance();
 		Transformer transformer = tFactory.newTransformer();
@@ -34,7 +34,7 @@ public class XMLsave {
 		transformer.transform(source, result);
 	}
 
-	private static void makeDoc(ArrayList<ArrayList<String>> Neurons, Double[] Connections) throws ParserConfigurationException {
+	private static void makeDoc(ArrayList<ArrayList<String>> Neurons, Double[] Connections, int epoch) throws ParserConfigurationException {
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		DocumentBuilder builder = dbf.newDocumentBuilder();
 		save = builder.newDocument();
@@ -64,6 +64,10 @@ public class XMLsave {
 			connections.appendChild(Value);
 			Value.insertBefore(save.createTextNode(Double.toString(ConnectionValue)), Value.getLastChild());
 		}
+		
+		Element Epoch = save.createElement("Epoch");
+		root.appendChild(Epoch);
+		Epoch.insertBefore(save.createTextNode(Integer.toString(epoch)), Epoch.getLastChild());
 	}
 
 	public static Document asXML(File file) throws SAXException, IOException, ParserConfigurationException {
