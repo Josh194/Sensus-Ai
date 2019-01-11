@@ -5,7 +5,7 @@ import main.NN.ActivationFunctions.*;
 
 public class AFHandler {
 
-	public static ActivationFunction[] functions = new ActivationFunction[] { new Sigmoid(), new Gaussian()};
+	private final static ActivationFunction[] functions = new ActivationFunction[] { new Sigmoid(), new Gaussian()};
 
 	public static Double activationFunction(int AF, Double value, Double MinRange, Double MaxRange) {
 		return functions[AF].function(value, MinRange, MaxRange);

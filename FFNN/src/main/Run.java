@@ -67,6 +67,7 @@ import main.NN.Neurons.BiasNeuron;
 import main.NN.Neurons.HiddenNeuron;
 import main.NN.Neurons.InputNeuron;
 import main.NN.Neurons.Neuron;
+import main.NN.Neurons.NeuronCreationHandler;
 import main.NN.Neurons.OutputNeuron;
 import main.util.Cast;
 import main.util.Select;
@@ -99,7 +100,7 @@ public class Run extends JFrame {
 	public static NeuralNetwork neuralNetwork = new NeuralNetwork(0.01);
 	public static int AF = 0;
 	private static int InputLine = 0;
-	private static int InputLines;
+	public static int InputLines;
 	private static Double[] Input = new Double[neuralNetwork.layers.get(0).neurons.size()
 			+ neuralNetwork.layers.get(neuralNetwork.layers.size() - 1).neurons.size()];
 	private static Connection connectionToRemove = null;
@@ -116,6 +117,8 @@ public class Run extends JFrame {
 	private OutputPanel outputPanel;
 	private ViewNeuron viewNeuron;
 	private MMenu mMenu;
+	
+	private int epoch = 0;
 
 	private JTextField LearningRate = new JTextField();
 	private JTextField TestInput = new JTextField();
@@ -318,8 +321,8 @@ public class Run extends JFrame {
 					} else if (closestShape instanceof Line2D) {
 						if (!FoundType && SwingUtilities.isRightMouseButton(mouseEvent)) {
 							for (Connection connection : neuralNetwork.connections) {
-								Vector2D P1 = connection.N1.animationHandler.getLocation();
-								Vector2D P2 = connection.N2.animationHandler.getLocation();
+								Vector2D P1 = connection.getFirstNeuron().animationHandler.getLocation();
+								Vector2D P2 = connection.getSecondNeuron().animationHandler.getLocation();
 
 								if (P1.isEqualTo(Cast.asVector2D(((Line2D) closestShape).getP1()))
 										&& P2.isEqualTo(Cast.asVector2D(((Line2D) closestShape).getP2()))) {
@@ -506,7 +509,6 @@ public class Run extends JFrame {
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
 					File file = fileChooser.getSelectedFile();
 					
-					@SuppressWarnings("unchecked")
 					ArrayList<ArrayList<String>> neurons = new ArrayList<ArrayList<String>>();
 					for (Layer layer : neuralNetwork.layers) {
 						neurons.add(new ArrayList<String>());
@@ -521,7 +523,7 @@ public class Run extends JFrame {
 					}
 					
 					try {
-						XMLsave.writeDocumentToFile(neurons, connections, new File(file.getAbsolutePath()));
+						XMLsave.writeDocumentToFile(neurons, connections, epoch, new File(file.getAbsolutePath()));
 					} catch (TransformerException e1) {
 						e1.printStackTrace();
 					} catch (ParserConfigurationException e1) {
@@ -561,19 +563,18 @@ public class Run extends JFrame {
 					Node node = nList.item(0);
 					Element eElement = (Element) node;
 					
+					neuralNetwork.clear();
+					
 					for (int i = 0; i < eElement.getElementsByTagName("Layer").getLength(); i++) {
+						neuralNetwork.layers.add(new Layer());
 						NodeList neurons = ((Element) eElement.getElementsByTagName("Layer").item(i)).getElementsByTagName("Neuron");
 						for (int n = 0; n < neurons.getLength(); n++) {
-							//neuralNetwork.layers.add(new Class.forName(neurons.item(n).getTextContent()));
-							try {
-								Class.forName("main.NeuralNetwork").newInstance();
-							} catch (ClassNotFoundException | InstantiationException | IllegalAccessException e1) {
-								e1.printStackTrace();
-							}
+							NeuronCreationHandler.createNeuron(neurons.item(n).getTextContent(), 0.0, neuralNetwork.layers.get(i));
 						}
 					}
 					
 					neuralNetwork.createConnections();
+					neuralNetwork.updateAnim();
 
 					try {
 						nList = XMLsave.asXML(file).getElementsByTagName("Connections");
@@ -583,10 +584,16 @@ public class Run extends JFrame {
 					node = nList.item(0);
 					eElement = (Element) node;
 
-					for (Connection connection : neuralNetwork.connections) {
-						connection.setValue(Double.parseDouble(eElement.getElementsByTagName("Connection")
-								.item(neuralNetwork.connections.indexOf(connection)).getTextContent()));
+					for (int i = 0; i < neuralNetwork.connections.size(); i++) {
+						neuralNetwork.connections.get(i).setValue(Double.parseDouble(eElement.getElementsByTagName("Connection").item(i).getTextContent()));
 					}
+					
+					try {
+						nList = XMLsave.asXML(file).getElementsByTagName("Epoch");
+					} catch (SAXException | IOException | ParserConfigurationException e1) {
+						e1.printStackTrace();
+					}
+					epoch = Integer.parseInt(nList.item(0).getTextContent());
 				} else {
 					System.out.println("File access cancelled by user.");
 				}
@@ -616,7 +623,8 @@ public class Run extends JFrame {
 				List<Double> Input = DoubleStream
 						.of(Arrays.stream(TestInput.getText().substring(1, TestInput.getText().length() - 1).split(","))
 								.map(String::trim).mapToDouble(Double::parseDouble).toArray())
-						.boxed().collect(Collectors.toList());
+									.boxed().collect(Collectors.toList());
+				
 				neuralNetwork.setInput(new ArrayList<Double>(Input));
 				neuralNetwork.feedForward();
 			}
@@ -636,10 +644,10 @@ public class Run extends JFrame {
 	}
 
 	public static void loadInput(String File) {
-		for (int i = 0; i <= neuralNetwork.layers.get(0).neurons.size() - neuralNetwork.layers.get(0).numberOf(BiasNeuron.class)
-				+ neuralNetwork.layers.get(neuralNetwork.layers.size() - 1).neurons.size() - 1; i++) {
+		for (int i = 0; i < neuralNetwork.layers.get(0).numberOf(InputNeuron.class) + neuralNetwork.layers.get(neuralNetwork.layers.size() - 1).neurons.size(); i++) {
 			try {
 				Input[i] = Double.parseDouble(Files.readAllLines(Paths.get(File)).get(InputLine));
+				
 				if (InputLine == InputLines) {
 					InputLine = 0;
 				} else {
@@ -678,6 +686,8 @@ public class Run extends JFrame {
 					neuralNetwork.setInput(new ArrayList<Double>(Arrays.asList(Input)));
 					neuralNetwork.feedForward();
 					neuralNetwork.feedBackward();
+					
+					epoch++;
 				}
 			}
 
@@ -687,6 +697,8 @@ public class Run extends JFrame {
 
 			g2.setColor(Color.BLACK);
 			g2.drawRect(10, 10, CANVAS_WIDTH - 20, CANVAS_HEIGHT - 20);
+			
+			g2.drawString("Epoch: " + epoch, 20, CANVAS_HEIGHT - 20);
 
 			Point reference = getContentPane().getLocationOnScreen();
 			int x = MouseInfo.getPointerInfo().getLocation().x - reference.x;
@@ -695,25 +707,26 @@ public class Run extends JFrame {
 			Shape closestShape = Select.getObjectUnderCursor(mouseLocation, shapes);
 
 			for (Connection connection : neuralNetwork.connections) {
-
-				Vector2D P1 = connection.N1.animationHandler.getLocation();
-				Vector2D P2 = connection.N2.animationHandler.getLocation();
+				Vector2D P1 = connection.getFirstNeuron().animationHandler.getLocation();
+				Vector2D P2 = connection.getSecondNeuron().animationHandler.getLocation();
 
 				if (Select.isShapeInRange(mouseLocation, closestShape, 10) && closestShape instanceof Line2D
 						&& P1.isEqualTo(Cast.asVector2D(((Line2D) closestShape).getP1()))
 						&& P2.isEqualTo(Cast.asVector2D(((Line2D) closestShape).getP2()))) {
-					Drawing.drawLine(g2, (int) connection.N1.animationHandler.getLocation().x,
-							(int) connection.N1.animationHandler.getLocation().y,
-							(int) connection.N2.animationHandler.getLocation().x,
-							(int) connection.N2.animationHandler.getLocation().y, (int) ((40 - 1) / (1 + (Math.pow(2.71828, (-1 * connection.getValue()) + 5))) + 1),
-							(-2 * neuralNetwork.layers.indexOf(connection.N1.getLayer())) - connection.RandomAnimOffset,
+					Drawing.drawLine(g2,
+							(int) connection.getFirstNeuron().animationHandler.getLocation().x,
+							(int) connection.getFirstNeuron().animationHandler.getLocation().y,
+							(int) connection.getSecondNeuron().animationHandler.getLocation().x,
+							(int) connection.getSecondNeuron().animationHandler.getLocation().y, (int) ((40 - 1) / (1 + (Math.pow(2.71828, (-1 * connection.getValue()) + 5))) + 1),
+							(-2 * neuralNetwork.layers.indexOf(connection.getFirstNeuron().getLayer())) - connection.getRandomAnimOffset(),
 							Color.black);
 				} else {
-					Drawing.drawLine(g2, (int) connection.N1.animationHandler.getLocation().x,
-							(int) connection.N1.animationHandler.getLocation().y,
-							(int) connection.N2.animationHandler.getLocation().x,
-							(int) connection.N2.animationHandler.getLocation().y, (int) ((40 - 1) / (1 + (Math.pow(2.71828, (-1 * connection.getValue()) + 5))) + 1),
-							(-2 * neuralNetwork.layers.indexOf(connection.N1.getLayer())) - connection.RandomAnimOffset,
+					Drawing.drawLine(g2,
+							(int) connection.getFirstNeuron().animationHandler.getLocation().x,
+							(int) connection.getFirstNeuron().animationHandler.getLocation().y,
+							(int) connection.getSecondNeuron().animationHandler.getLocation().x,
+							(int) connection.getSecondNeuron().animationHandler.getLocation().y, (int) ((40 - 1) / (1 + (Math.pow(2.71828, (-1 * connection.getValue()) + 5))) + 1),
+							(-2 * neuralNetwork.layers.indexOf(connection.getFirstNeuron().getLayer())) - connection.getRandomAnimOffset(),
 							connection.getColor());
 				}
 			}
