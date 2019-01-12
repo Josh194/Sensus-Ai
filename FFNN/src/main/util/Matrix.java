@@ -1,53 +1,31 @@
 package main.util;
 
-import java.util.ArrayList;
-
 public class Matrix {
 	
-	ArrayList<ArrayList<Double>> elements = new ArrayList<ArrayList<Double>>();
+	private Double[][] elements = new Double[0][0];
 	
 	public Matrix() {
 		
 	}
 	
 	public void setSize(int columns, int rows) {
-		if(elements.size() != 0) {
-			if(columns != elements.size() && rows != elements.get(0).size()) {
-				for (int i = 0; i < columns; i++) {
-					elements.add(new ArrayList<Double>(rows));
-					
-					
-					for (int n = 0; n < rows; n++) {
-						  elements.get(n).add(0.0);
-					}
-				}
-			}
-		} else {
-			for (int i = 0; i < columns; i++) {
-				elements.add(new ArrayList<Double>(rows));
-				
-				
-				for (int n = 0; n < rows; n++) {
-					  elements.get(i).add(0.0);
-				}
-			}
-		}
+		elements = new Double[rows][columns];
 	}
 	
 	public int rows() {
-		return elements.get(0).size();
+		return elements[0].length;
 	}
 	
 	public int columns() {
-		return elements.size();
+		return elements.length;
 	}
 	
-	public double getElement(int column, int row) {
-		return elements.get(column).get(row);
+	public double getElement(int row, int column) {
+		return elements[row][column];
 	}
 	
-	public void setElement(double value, int column, int row) {
-		elements.get(column).set(row, value);
+	public void setElement(double value, int row, int column) {
+		elements[row][column] = value;
 	}
 	
 	public String toString() {
