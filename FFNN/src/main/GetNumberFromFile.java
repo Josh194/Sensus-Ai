@@ -2,16 +2,17 @@ package main;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 public class GetNumberFromFile {
 	
-	public static Double num = 0d;
+	private static Double num = 0d;
 	
 	public static Double getLargestNumber(String FilePath) {
         try {
-            Scanner file = new Scanner(new File(FilePath));
+            Scanner file = new Scanner(new File(FilePath), "UTF-8");
             Double largest = file.nextDouble();
 
             while(file.hasNextDouble()) {
@@ -36,7 +37,7 @@ public class GetNumberFromFile {
 	
 	public static Double getSmallestNumber(String FilePath) {
         try {
-            Scanner file = new Scanner(new File(FilePath));
+            Scanner file = new Scanner(new File(FilePath), "UTF-8");
             Double smallest = file.nextDouble();
 
             while(file.hasNextDouble()) {
