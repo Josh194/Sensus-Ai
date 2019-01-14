@@ -1,4 +1,4 @@
-package Graphics;
+package graphics;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -138,9 +138,7 @@ public class Drawing {
 		g2.setStroke(new BasicStroke(Math.abs(size)));
 		g2.drawLine(x1, y1, (int) (((x2 - x1) * animationPercent(timeOffset)) + x1),
 				(int) (((y2 - y1) * animationPercent(timeOffset)) + y1));
-		if (Added) {
-
-		} else {
+		if (!Added) {
 			Run.shapes.add(new Line2D.Double(x1, y1, x2, y2));
 		}
 	}

@@ -19,7 +19,7 @@ public class Vector2D {
 	public boolean isEqualTo(Vector2D point) {
 		double epsilon = 0.00001;
 		
-		if (Math.abs(this.x - x) < epsilon && Math.abs(this.y - y) < epsilon) {
+		if (Math.abs(point.x - x) < epsilon && Math.abs(point.y - y) < epsilon) {
 			return true;
 		} else {
 			return false;

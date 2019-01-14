@@ -13,3 +13,6 @@ Drag To Create New Connections
 Realtime Input Support
 Fixed Speed (Now Runs Much Faster)
 Fixed Multiple Output Neuron Support
+
+Note:
+If you are having problems giving the NN input, make sure your input file ends with a new line.

@@ -8,30 +8,35 @@ import main.util.Matrix;
 
 public class Convolution {
 
-	Matrix neurons = new Matrix();
+	Matrix pixels = new Matrix();
+	int[][] filter = new int[][] {{1, 0, 1}, {0, 1, 0}, {1, 0, 1}};
 	
 	public Convolution() {
+		
+	}
+	
+	public void update() {
 		
 	}
 	
 	public void loadImage(BufferedImage imageToLoad) {
 		BufferedImage image = convertToGrayScale(imageToLoad);
 		
-		byte[] pixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
+		byte[] pixelArray = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
 		int iteration = 0;
 		
-		neurons.setSize(image.getHeight(), image.getWidth());
+		pixels.setSize(image.getWidth(), image.getHeight());
 		
 		for (int i = 0; i < image.getHeight(); i++) {
 			for (int n = 0; n < image.getWidth(); n++) {
-				neurons.setElement(pixels[iteration], i, n);
+				pixels.setElement(pixelArray[iteration] & 0xff, i, n);
 				
 				iteration++;
 			}
 		}
 	}
 	
-	public static BufferedImage convertToGrayScale(BufferedImage image) {
+	public BufferedImage convertToGrayScale(BufferedImage image) {
 		  BufferedImage result = new BufferedImage(
 		            image.getWidth(),
 		            image.getHeight(),
@@ -42,11 +47,28 @@ public class Convolution {
 		  return result;
 	}
 	
-	public static Matrix doConvolution() {
-		return new Matrix();
+	public Matrix doConvolution() {
+		Matrix featureMap = new Matrix();
+		featureMap.setSize(pixels.rows(), pixels.columns());
+		
+		for (int i = 0; i < pixels.rows(); i++) {
+			for (int n = 0; n < pixels.columns(); n++) {
+				int sum = 0;
+				
+				for (int r = 0; r < filter.length; r++) {
+					for (int c = 0; c < filter[0].length; c++) {
+						sum += pixels.getElement(i + (r - ((filter.length - 1) / 2)), n + (c - ((filter[0].length - 1) / 2))) * filter[r][c];
+					}
+				}
+				
+				featureMap.setElement(sum, i, n);
+			}
+		}
+		
+		return featureMap;
 	}
 	
-	public Matrix getNeurons() {
-		return neurons;
+	public Matrix getPixels() {
+		return pixels;
 	}
 }

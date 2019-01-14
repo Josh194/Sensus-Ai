@@ -60,7 +60,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import Graphics.Drawing;
+import graphics.Drawing;
 import main.NN.Connection;
 import main.NN.Layer;
 import main.NN.Neurons.BiasNeuron;
@@ -157,10 +157,10 @@ public class Run extends JFrame {
 	private void initGui() {
 
 		try {
-			BasicNeuronImage = ImageIO.read(getClass().getResourceAsStream("/Graphics/Simple_Neuron.png"));
-			BiasNeuronImage = ImageIO.read(getClass().getResourceAsStream("/Graphics/Bias_Neuron.png"));
-			InputNeuronImage = ImageIO.read(getClass().getResourceAsStream("/Graphics/Input_Neuron.png"));
-			OutputNeuronImage = ImageIO.read(getClass().getResourceAsStream("/Graphics/Output_Neuron.png"));
+			BasicNeuronImage = ImageIO.read(getClass().getResourceAsStream("/graphics/Simple_Neuron.png"));
+			BiasNeuronImage = ImageIO.read(getClass().getResourceAsStream("/graphics/Bias_Neuron.png"));
+			InputNeuronImage = ImageIO.read(getClass().getResourceAsStream("/graphics/Input_Neuron.png"));
+			OutputNeuronImage = ImageIO.read(getClass().getResourceAsStream("/graphics/Output_Neuron.png"));
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
@@ -320,17 +320,18 @@ public class Run extends JFrame {
 						}
 					} else if (closestShape instanceof Line2D) {
 						if (!FoundType && SwingUtilities.isRightMouseButton(mouseEvent)) {
-							for (Connection connection : neuralNetwork.connections) {
-								Vector2D P1 = connection.getFirstNeuron().animationHandler.getLocation();
-								Vector2D P2 = connection.getSecondNeuron().animationHandler.getLocation();
+							for (Layer layer : neuralNetwork.layers) {
+								for (Connection connection : layer.connections) {
+									Vector2D P1 = connection.getFirstNeuron().animationHandler.getLocation();
+									Vector2D P2 = connection.getSecondNeuron().animationHandler.getLocation();
 
-								if (P1.isEqualTo(Cast.asVector2D(((Line2D) closestShape).getP1()))
-										&& P2.isEqualTo(Cast.asVector2D(((Line2D) closestShape).getP2()))) {
-									connectionToRemove = connection;
+									if (P1.isEqualTo(Cast.asVector2D(((Line2D) closestShape).getP1()))
+											&& P2.isEqualTo(Cast.asVector2D(((Line2D) closestShape).getP2()))) {
+										connectionToRemove = connection;
+									}
 								}
 							}
-
-							Run.neuralNetwork.connections.remove(connectionToRemove);
+							connectionToRemove.getFirstNeuron().getLayer().connections.remove(connectionToRemove);
 							shapes.remove(closestShape);
 						}
 					}
@@ -373,8 +374,7 @@ public class Run extends JFrame {
 								.isEqualTo(new Vector2D(neuronStartShape.getBounds().getCenterX(),
 										neuronStartShape.getBounds().getCenterY()))) {
 							if (neuronStart != null) {
-								neuralNetwork.connections
-										.add(new Connection(neuronStart, neuron));
+								neuronStart.getLayer().connections.add(new Connection(neuronStart, neuron));
 							}
 						}
 					}
@@ -477,7 +477,7 @@ public class Run extends JFrame {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Input = new Double[neuralNetwork.layers.get(0).neurons.size()
+				Input = new Double[neuralNetwork.layers.get(0).numberOf(InputNeuron.class)
 						+ neuralNetwork.layers.get(neuralNetwork.layers.size() - 1).neurons.size()];
 
 				fileChooser.setFileFilter((new FileNameExtensionFilter("text files (*.txt)", "txt")));
@@ -517,9 +517,14 @@ public class Run extends JFrame {
 						}
 					}
 
-					Double[] connections = new Double[neuralNetwork.connections.size()];
-					for (Connection connection : neuralNetwork.connections) {
-						connections[neuralNetwork.connections.indexOf(connection)] = connection.getValue();
+					Double[] connections = new Double[neuralNetwork.numberOfConnections()];
+					int index = 0;
+					
+					for (int i = 0; i < neuralNetwork.layers.size(); i++) {
+						for (int n = 0; i < neuralNetwork.layers.get(i).connections.size(); n++) {
+							connections[index] = neuralNetwork.layers.get(i).connections.get(n).getValue();
+							index++;
+						}
 					}
 					
 					try {
@@ -584,8 +589,13 @@ public class Run extends JFrame {
 					node = nList.item(0);
 					eElement = (Element) node;
 
-					for (int i = 0; i < neuralNetwork.connections.size(); i++) {
-						neuralNetwork.connections.get(i).setValue(Double.parseDouble(eElement.getElementsByTagName("Connection").item(i).getTextContent()));
+					int index = 0;
+					
+					for (Layer layer : neuralNetwork.layers) {
+						for (Connection connection : layer.connections) {
+							connection.setValue(Double.parseDouble(eElement.getElementsByTagName("Connection").item(index).getTextContent()));
+							index++;
+						}
 					}
 					
 					try {
@@ -648,7 +658,7 @@ public class Run extends JFrame {
 			try {
 				Input[i] = Double.parseDouble(Files.readAllLines(Paths.get(File)).get(InputLine));
 				
-				if (InputLine == InputLines) {
+				if (InputLine == InputLines - 1) {
 					InputLine = 0;
 				} else {
 					InputLine++;
@@ -706,28 +716,30 @@ public class Run extends JFrame {
 			Vector2D mouseLocation = new Vector2D(x, y);
 			Shape closestShape = Select.getObjectUnderCursor(mouseLocation, shapes);
 
-			for (Connection connection : neuralNetwork.connections) {
-				Vector2D P1 = connection.getFirstNeuron().animationHandler.getLocation();
-				Vector2D P2 = connection.getSecondNeuron().animationHandler.getLocation();
+			for (Layer layer : neuralNetwork.layers) {
+				for (Connection connection : layer.connections) {
+					Vector2D P1 = connection.getFirstNeuron().animationHandler.getLocation();
+					Vector2D P2 = connection.getSecondNeuron().animationHandler.getLocation();
 
-				if (Select.isShapeInRange(mouseLocation, closestShape, 10) && closestShape instanceof Line2D
-						&& P1.isEqualTo(Cast.asVector2D(((Line2D) closestShape).getP1()))
-						&& P2.isEqualTo(Cast.asVector2D(((Line2D) closestShape).getP2()))) {
-					Drawing.drawLine(g2,
-							(int) connection.getFirstNeuron().animationHandler.getLocation().x,
-							(int) connection.getFirstNeuron().animationHandler.getLocation().y,
-							(int) connection.getSecondNeuron().animationHandler.getLocation().x,
-							(int) connection.getSecondNeuron().animationHandler.getLocation().y, (int) ((40 - 1) / (1 + (Math.pow(2.71828, (-1 * connection.getValue()) + 5))) + 1),
-							(-2 * neuralNetwork.layers.indexOf(connection.getFirstNeuron().getLayer())) - connection.getRandomAnimOffset(),
-							Color.black);
-				} else {
-					Drawing.drawLine(g2,
-							(int) connection.getFirstNeuron().animationHandler.getLocation().x,
-							(int) connection.getFirstNeuron().animationHandler.getLocation().y,
-							(int) connection.getSecondNeuron().animationHandler.getLocation().x,
-							(int) connection.getSecondNeuron().animationHandler.getLocation().y, (int) ((40 - 1) / (1 + (Math.pow(2.71828, (-1 * connection.getValue()) + 5))) + 1),
-							(-2 * neuralNetwork.layers.indexOf(connection.getFirstNeuron().getLayer())) - connection.getRandomAnimOffset(),
-							connection.getColor());
+					if (Select.isShapeInRange(mouseLocation, closestShape, 10) && closestShape instanceof Line2D
+							&& P1.isEqualTo(Cast.asVector2D(((Line2D) closestShape).getP1()))
+							&& P2.isEqualTo(Cast.asVector2D(((Line2D) closestShape).getP2()))) {
+						Drawing.drawLine(g2,
+								(int) connection.getFirstNeuron().animationHandler.getLocation().x,
+								(int) connection.getFirstNeuron().animationHandler.getLocation().y,
+								(int) connection.getSecondNeuron().animationHandler.getLocation().x,
+								(int) connection.getSecondNeuron().animationHandler.getLocation().y, (int) ((40 - 1) / (1 + (Math.pow(2.71828, (-1 * connection.getValue()) + 5))) + 1),
+								(-2 * neuralNetwork.layers.indexOf(connection.getFirstNeuron().getLayer())) - connection.getRandomAnimOffset(),
+								Color.black);
+					} else {
+						Drawing.drawLine(g2,
+								(int) connection.getFirstNeuron().animationHandler.getLocation().x,
+								(int) connection.getFirstNeuron().animationHandler.getLocation().y,
+								(int) connection.getSecondNeuron().animationHandler.getLocation().x,
+								(int) connection.getSecondNeuron().animationHandler.getLocation().y, (int) ((40 - 1) / (1 + (Math.pow(2.71828, (-1 * connection.getValue()) + 5))) + 1),
+								(-2 * neuralNetwork.layers.indexOf(connection.getFirstNeuron().getLayer())) - connection.getRandomAnimOffset(),
+								connection.getColor());
+					}
 				}
 			}
 
