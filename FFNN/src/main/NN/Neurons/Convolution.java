@@ -4,19 +4,24 @@ import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 
+import main.NN.AFHandler;
 import main.util.Matrix;
 
 public class Convolution {
 
-	Matrix pixels = new Matrix();
-	int[][] filter = new int[][] {{1, 0, 1}, {0, 1, 0}, {1, 0, 1}};
-	
+	private Matrix pixels = new Matrix();
+	private int[][] filter = new int[][] {{1, 0, 1}, {0, 1, 0}, {1, 0, 1}};
+
 	public Convolution() {
 		
 	}
 	
 	public void update() {
-		
+		for (int i = 0; i < pixels.rows(); i++) {
+			for (int n = 0; n < pixels.columns(); n++) {
+				pixels.setElement(AFHandler.activationFunction(2, Double.valueOf(pixels.getElement(i, n)), 0.0, 0.0).intValue(), i, n);
+			}
+		}
 	}
 	
 	public void loadImage(BufferedImage imageToLoad) {
@@ -47,7 +52,7 @@ public class Convolution {
 		  return result;
 	}
 	
-	public Matrix doConvolution() {
+	public void doConvolution() {
 		Matrix featureMap = new Matrix();
 		featureMap.setSize(pixels.rows(), pixels.columns());
 		
@@ -65,10 +70,22 @@ public class Convolution {
 			}
 		}
 		
-		return featureMap;
+		pixels = featureMap;
+	}
+	
+	public int[][] getFilter() {
+		return filter;
+	}
+
+	public void setFilter(int[][] filter) {
+		this.filter = filter;
 	}
 	
 	public Matrix getPixels() {
 		return pixels;
+	}
+	
+	public String toString() {
+		return pixels.toString();
 	}
 }

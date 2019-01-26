@@ -69,7 +69,9 @@ public class NeuralNetwork {
 		layers.get(i).connections.clear();
 			for (Neuron neuron : layers.get(i).neurons) {
 				for (Neuron nextNeuron : layers.get(i + 1).neurons) {
-					layers.get(i).connections.add(new Connection(neuron, nextNeuron));
+					if (!nextNeuron.getType().equals("BiasNeuron")) {
+						layers.get(i).connections.add(new Connection(neuron, nextNeuron));
+					}
 				}
 			}
 		}
@@ -150,21 +152,21 @@ public class NeuralNetwork {
 			batchAverage += (sum / layers.get(layers.size() - 1).neurons.size());
 			
 			if (minError == null) {
-				minError = batchAverage / (layers.get(layers.size() - 1).neurons.size() + layers.get(0).neurons.size()
-						- layers.get(0).numberOf(BiasNeuron.class));
-				maxError = batchAverage / (layers.get(layers.size() - 1).neurons.size() + layers.get(0).neurons.size()
-						- layers.get(0).numberOf(BiasNeuron.class));
+				minError = batchAverage / (((Run.InputLines + 1)
+						/ (layers.get(0).numberOf(InputNeuron.class) + layers.get(layers.size() - 1).neurons.size())) - 1);
+				maxError = batchAverage / (((Run.InputLines + 1)
+						/ (layers.get(0).numberOf(InputNeuron.class) + layers.get(layers.size() - 1).neurons.size())) - 1);
 			} else {
-				if (batchAverage / (layers.get(layers.size() - 1).neurons.size() + layers.get(0).neurons.size()
-						- layers.get(0).numberOf(BiasNeuron.class)) > maxError) {
-					maxError = batchAverage / (layers.get(layers.size() - 1).neurons.size()
-							+ layers.get(0).neurons.size() - layers.get(0).numberOf(BiasNeuron.class));
+				if (batchAverage / (((Run.InputLines + 1)
+						/ (layers.get(0).numberOf(InputNeuron.class) + layers.get(layers.size() - 1).neurons.size())) - 1) > maxError) {
+					maxError = batchAverage / (((Run.InputLines + 1)
+							/ (layers.get(0).numberOf(InputNeuron.class) + layers.get(layers.size() - 1).neurons.size())) - 1);
 				}
 
-				if (batchAverage / (layers.get(layers.size() - 1).neurons.size() + layers.get(0).neurons.size()
-						- layers.get(0).numberOf(BiasNeuron.class)) < minError) {
-					minError = batchAverage / (layers.get(layers.size() - 1).neurons.size()
-							+ layers.get(0).neurons.size() - layers.get(0).numberOf(BiasNeuron.class));
+				if (batchAverage / (((Run.InputLines + 1)
+						/ (layers.get(0).numberOf(InputNeuron.class) + layers.get(layers.size() - 1).neurons.size())) - 1) < minError) {
+					minError = batchAverage / (((Run.InputLines + 1)
+							/ (layers.get(0).numberOf(InputNeuron.class) + layers.get(layers.size() - 1).neurons.size())) - 1);
 				}
 			}
 			

@@ -93,6 +93,7 @@ public class Run extends JFrame {
 	public static BufferedImage InputNeuronImage;
 	public static BufferedImage OutputNeuronImage;
 	public static String SelectedNeuronType = "None";
+	public static Neuron SelectedNeuron;
 	public static boolean FoundType = false;
 
 	public Boolean Paused = true;
@@ -293,6 +294,7 @@ public class Run extends JFrame {
 											.isEqualTo(new Vector2D(closestShape.getBounds().getCenterX(),
 													closestShape.getBounds().getCenterY()))) {
 										NeuronLayer = neuralNetwork.layers.indexOf(neuron.getLayer());
+										SelectedNeuron = neuron;
 										SelectedNeuronType = neuron.getType();
 									}
 								}
@@ -977,7 +979,7 @@ public class Run extends JFrame {
 
 			RemoveN.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					neuralNetwork.layers.get(NeuronLayer).neurons.remove(0);
+					neuralNetwork.layers.get(NeuronLayer).neurons.remove(SelectedNeuron);
 					neuralNetwork.createConnections();
 					neuralNetwork.updateAnim();
 

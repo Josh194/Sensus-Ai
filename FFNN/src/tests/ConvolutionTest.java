@@ -13,8 +13,12 @@ public class ConvolutionTest {
 	public ConvolutionTest() {
 		try {
 			convolution.loadImage(ImageIO.read(getClass().getResourceAsStream("/tests/resources/Test.png")));
+			convolution.setFilter(new int[][] {{-1, 0, +1},{-2, 0, 2},{-1, 0, +1}});
 			System.out.println(convolution.getPixels());
-			System.out.println(convolution.doConvolution());
+			convolution.doConvolution();
+			System.out.println(convolution);
+			convolution.update();
+			System.out.println(convolution);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
