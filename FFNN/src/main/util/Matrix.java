@@ -4,14 +4,14 @@ import java.util.Arrays;
 
 public class Matrix {
 	
-	private int[][] elements = new int[0][0];
+	private Integer[][] elements = new Integer[0][0];
 	
 	public Matrix() {
 		
 	}
 	
 	public void setSize(int rows, int columns) {
-		elements = new int[rows][columns];
+		elements = new Integer[rows][columns];
 	}
 	
 	public int rows() {
@@ -22,7 +22,7 @@ public class Matrix {
 		return elements[0].length;
 	}
 	
-	public int getElement(int row, int column) {
+	public Integer getElement(int row, int column) {
 		if ((row < rows() && row >= 0) && (column < columns() && column >= 0)) {
 			return elements[row][column];
 		} else {
@@ -30,11 +30,11 @@ public class Matrix {
 		}
 	}
 	
-	public void setElement(int value, int row, int column) {
+	public void setElement(Integer value, int row, int column) {
 		elements[row][column] = value;
 	}
 	
 	public String toString() {
-		return Arrays.deepToString(elements);
+		return Arrays.deepToString(elements).replaceAll("], ", "],\n ");
 	}
 }

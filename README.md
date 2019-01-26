@@ -1,18 +1,32 @@
-# Sensus Ai
-Just a little AI project I am working on
+<div align="center">
 ![alt text](https://raw.githubusercontent.com/Josh194/Ai/master/FFNN/src/images/logo.png)
-Version: 1.3.0
+</div>
+
+-----------------
+
+Version: 1.3.2
+
+An open source neural network designed to give a visual into deep learning. Currently, this project only supports deep feed forward networks, but convolutional networks, recurrent networks, and other types will be added soon.
+
+Features:
+⋅⋅* Dynamic architecture
+⋅⋅* Easy input through a text file
+⋅⋅* Saving/Loading of networks through .xml files
+⋅⋅* Realtime error graph for easy visualization
+⋅⋅* Different activation functions
+⋅⋅* Variable learning rate
 
 New:
-New Error Graph
-Full Support for Multiple Output Neurons
-Neuron Resizing based on Layer Size
-Fixed Graph Range
-Highlight Selected Connections
-Drag To Create New Connections
-Realtime Input Support
-Fixed Speed (Now Runs Much Faster)
-Fixed Multiple Output Neuron Support
+⋅⋅* New error graph with line simplification algorithm 
+⋅⋅* Full support for multiple output neurons
+⋅⋅* Neuron resizing based on layer size
+⋅⋅* Fixed graph range
+⋅⋅* Highlight selected connections
+⋅⋅* Drag to create new connections
+⋅⋅* Realtime input support
+⋅⋅* Removed Thread.sleep() in feed loop, allowing the ai to run much faster
+⋅⋅* Epoch counter
+⋅⋅* + Other changes
 
 Note:
 If you are having problems giving the NN input, make sure your input file ends with a new line.
