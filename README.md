@@ -1,5 +1,5 @@
 <div align="center">
-  <img src = "https://raw.githubusercontent.com/Josh194/Ai/master/FFNN/src/images/logo.png)">
+  <img src = "https://raw.githubusercontent.com/Josh194/Ai/master/FFNN/src/images/logo.png">
 </div>
 
 -----------------
