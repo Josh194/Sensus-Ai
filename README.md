@@ -26,7 +26,7 @@ New:
 * Realtime input support
 * Removed Thread.sleep() in feed loop, allowing the ai to run much faster
 * Epoch counter
-* + Other changes
+* Other changes
 
 Note:
 If you are having problems giving the NN input, make sure your input file ends with a new line.
