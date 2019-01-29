@@ -6,7 +6,7 @@
 
 Version: 1.3.2
 
-An open source neural network designed to give a visual into deep learning. Currently, this project only supports deep feed forward networks, but convolutional networks, recurrent networks, and other types will be added soon.
+An open source neural network creation tool designed to give a visual into deep learning. Currently, this project only supports deep feed forward networks, but convolutional networks, recurrent networks, and other types will be added soon.
 
 Features:
 * Dynamic architecture
