@@ -1,0 +1,6 @@
+bin/
+.*
+!/.gitignore
+*.DS_Store
+*.classpath
+*.project
