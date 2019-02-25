@@ -1,7 +1,6 @@
 bin/
-.git/
-.metadata/
-.settings/
+.*
+!/.gitignore
 *.DS_Store
 *.classpath
 *.project
