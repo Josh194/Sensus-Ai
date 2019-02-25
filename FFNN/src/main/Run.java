@@ -61,6 +61,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import graphics.Drawing;
+import graphics.screens.Overview;
 import main.NN.Connection;
 import main.NN.Layer;
 import main.NN.Neurons.BiasNeuron;
@@ -259,7 +260,7 @@ public class Run extends JFrame {
 		controlPanel.add(customizationPanel, "customizationPanel");
 		controlPanel.add(outputPanel, "outputPanel");
 		controlPanel.add(viewNeuron, "viewNeuron");
-
+		
 		container.add(mMenu);
 		container.add(canvas, new GridBagConstraints(0, 0, 2, 3, 0d, 0d, GridBagConstraints.LINE_START,
 				GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
@@ -267,13 +268,19 @@ public class Run extends JFrame {
 				GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
 		container.add(controlPanel, new GridBagConstraints(2, 2, 1, 1, 0d, 0d, GridBagConstraints.FIRST_LINE_END,
 				GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
-
+		
 		canvas.setVisible(false);
 		graphPanel.setVisible(false);
 		controlPanel.setVisible(false);
 
 		Container cp = getContentPane();
-		cp.add(container);
+		
+		Overview ov = new Overview();
+		ov.setPreferredSize(new Dimension(1680, 1050));
+		ov.setLayout(null);
+		cp.add(ov);
+		
+		//cp.add(container);
 	}
 
 	public void initMouseListener() {
@@ -353,14 +360,19 @@ public class Run extends JFrame {
 
 			public void mousePressed(MouseEvent me) {
 				mouseLocation = Cast.asVector2D(me.getPoint());
-				neuronStartShape = (Ellipse2D) Select.getObjectUnderCursor(mouseLocation, shapes);
-
-				for (Layer layer : neuralNetwork.layers) {
-					for (Neuron neuron : layer.neurons) {
-						if (neuron.animationHandler.getLocation()
-								.isEqualTo(new Vector2D(neuronStartShape.getBounds().getCenterX(),
-										neuronStartShape.getBounds().getCenterY()))) {
-							neuronStart = neuron;
+				
+				Object underCursor = Select.getObjectUnderCursor(mouseLocation, shapes);
+				
+				if (underCursor instanceof Ellipse2D) {
+					neuronStartShape = (Ellipse2D) underCursor;
+					
+					for (Layer layer : neuralNetwork.layers) {
+						for (Neuron neuron : layer.neurons) {
+							if (neuron.animationHandler.getLocation()
+									.isEqualTo(new Vector2D(neuronStartShape.getBounds().getCenterX(),
+											neuronStartShape.getBounds().getCenterY()))) {
+								neuronStart = neuron;
+							}
 						}
 					}
 				}
@@ -368,15 +380,20 @@ public class Run extends JFrame {
 
 			public void mouseReleased(MouseEvent me) {
 				mouseLocation = Cast.asVector2D(me.getPoint());
-				neuronStartShape = (Ellipse2D) Select.getObjectUnderCursor(mouseLocation, shapes);
+				
+				Object underCursor = Select.getObjectUnderCursor(mouseLocation, shapes);
+				
+				if (underCursor instanceof Ellipse2D) {
+					neuronStartShape = (Ellipse2D) underCursor;
 
-				for (Layer layer : neuralNetwork.layers) {
-					for (Neuron neuron : layer.neurons) {
-						if (neuron.animationHandler.getLocation()
-								.isEqualTo(new Vector2D(neuronStartShape.getBounds().getCenterX(),
-										neuronStartShape.getBounds().getCenterY()))) {
-							if (neuronStart != null) {
-								neuronStart.getLayer().connections.add(new Connection(neuronStart, neuron));
+					for (Layer layer : neuralNetwork.layers) {
+						for (Neuron neuron : layer.neurons) {
+							if (neuron.animationHandler.getLocation()
+									.isEqualTo(new Vector2D(neuronStartShape.getBounds().getCenterX(),
+											neuronStartShape.getBounds().getCenterY()))) {
+								if (neuronStart != null) {
+									neuronStart.getLayer().connections.add(new Connection(neuronStart, neuron));
+								}
 							}
 						}
 					}
@@ -840,7 +857,7 @@ public class Run extends JFrame {
 		}
 	}
 
-	private class MMenu extends JPanel {
+	private class MMenu extends JPanel {		
 		@Override
 		public void paintComponent(Graphics g) {
 			super.paintComponent(g);
