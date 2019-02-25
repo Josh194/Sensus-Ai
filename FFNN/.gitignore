@@ -1,4 +1,6 @@
 /bin/
+/.git/
+/.metadata/
 /.settings/
 *.DS_Store
 *.classpath

@@ -1,13 +1,11 @@
 package main;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import graphics.Drawing;
 import main.NN.AFHandler;
 import main.NN.Connection;
 import main.NN.Layer;
-import main.NN.Neurons.BiasNeuron;
 import main.NN.Neurons.HiddenNeuron;
 import main.NN.Neurons.InputNeuron;
 import main.NN.Neurons.Neuron;

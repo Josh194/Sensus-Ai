@@ -1,23 +1,9 @@
 package graphics.screens;
 
-public class Screen {
+import javax.swing.JPanel;
 
-	public static final int MAIN_MENU = 0;
-	public static final int FEED_FORWARD = 1;
-	public static final int CONVOLUTIONAL = 2;
+public class Screen extends JPanel {
 
-	public static Screen createScreen(int type) {
-		switch (type) {
-			case 0:
-				return new MainMenuScreen();
-			
-			case 1:
-				return new FeedForwardScreen();
-
-			case 2:
-				return new ConvolutionalScreen();
-		}
-		
-		return null;
-	}
+	private static final long serialVersionUID = 8790114865116631558L;
+	
 }
