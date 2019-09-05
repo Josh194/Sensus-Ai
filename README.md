@@ -3,6 +3,7 @@
 </div>
 
 -----------------
+**NOTE: This project has been discontinued; I started this project at a time when I had just started to learn programming. The project was build on terrible frameworks, and there were a good hundred or so various problems (Such as computation cycles being limited to the speed at which frames could be drawn on screen). It has become almost impossible to add new features due to to the aforementioned frameworks, and it would take too long to fix all the problems. Because of that, I am working on a new version of the project, in C++, with many new features, and with many of the issues in this version fixed.**
 
 Version: 1.3.2
 
